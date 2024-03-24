@@ -111,11 +111,11 @@ public class Unit {
 		float lastMovePoints = (float)movePoints;
 		float movePointPenalty;
 		boolean secondDiagonal = false;
-		int xNextPoint;
-		int yNextPoint;
+		int xNextPoint = xCoord;
+		int yNextPoint = yCoord;
 		while ((xDistance != 0) && (yDistance != 0)) {
-			xNextPoint = xCoord + xMove;
-			yNextPoint = yCoord + yMove;
+			xNextPoint = xNextPoint + xMove;
+			yNextPoint = yNextPoint + yMove;
 			movePointPenalty = penalty.getOrDefault(battlePlace.getFieldByPosition(xNextPoint, yNextPoint), 1f);
 			lastMovePoints -= movePointPenalty;
 			if (secondDiagonal) {
@@ -126,13 +126,13 @@ public class Unit {
 			yDistance += yMove;
 		}
 		while (xDistance != 0) {
-			xNextPoint = xCoord + xMove;
+			xNextPoint = xNextPoint + xMove;
 			movePointPenalty = penalty.getOrDefault(battlePlace.getFieldByPosition(xNextPoint, yCoord), 1f);
 			lastMovePoints -= movePointPenalty;
 			xDistance += xMove;
 		}
 		while (yDistance != 0) {
-			yNextPoint = yCoord + yMove;
+			yNextPoint = yNextPoint + yMove;
 			movePointPenalty = penalty.getOrDefault(battlePlace.getFieldByPosition(xCoord, yNextPoint), 1f);
 			lastMovePoints -= movePointPenalty;
 			yDistance += yMove;

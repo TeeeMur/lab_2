@@ -9,7 +9,6 @@ import Bots.Bot;
 import Units.Unit;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class Game {
 
@@ -21,14 +20,12 @@ public class Game {
 	public static final String ANSI_BLUE = "\u001B[34m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 
-	int wallet;
-	int gameDifficulty;
-	BattleMap battleMap;
+	private int wallet;
+	private final BattleMap battleMap;
+	private final Bot secondGamer;
 
-	Bot secondGamer;
-
-	ArrayList<Unit> gamerUnitsArray = new ArrayList<>();
-	ArrayList<Unit> secondGamerUnitsArray = new ArrayList<>();
+	private final ArrayList<Unit> gamerUnitsArray = new ArrayList<>();
+	private final ArrayList<Unit> secondGamerUnitsArray = new ArrayList<>();
 
 	private final ArrayList<ArrayList<String>> unitsTyping = new ArrayList<>() {{
 		add(new ArrayList<>(Arrays.asList("Мечник", "Копьеносец", "Топорщик")));
@@ -56,6 +53,13 @@ public class Game {
 		add(new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
 	}};
 
+	public Game(int gameDifficulty) {
+		battleMap = new BattleMap(15, 15, gameDifficulty);
+		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
+				unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), gameDifficulty);
+		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), gameDifficulty);
+		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
+	}
 	private static boolean isNotNumeric(String str) {
 		try {
 			Integer.parseInt(str);
@@ -65,23 +69,6 @@ public class Game {
 		}
 	}
 
-	public void start() throws InterruptedException {
-		System.out.println("Добро пожаловать в игру Bauman's gate!");
-		TimeUnit.SECONDS.sleep(1);
-		System.out.print("Выберите сложность игры от 1 до 5:");
-		Scanner in = new Scanner(System.in);
-		String difficulty = in.nextLine();
-		while (isNotNumeric(difficulty) || (Integer.parseInt(difficulty) < 1) || (Integer.parseInt(difficulty) > 5)) {
-			System.out.print("Выберите сложность игры" + ANSI_RED + " от 1 до 5:" + ANSI_RESET);
-			difficulty = in.nextLine();
-		}
-		int intDifficulty = Integer.parseInt(difficulty);
-		battleMap = new BattleMap(15, 15, intDifficulty);
-		fillWallet(15, 15, intDifficulty);
-		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping, unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), intDifficulty);
-		gameDifficulty = intDifficulty;
-	}
-
 	private void fillWallet(int sizeX, int sizeY, int difficulty) {
 		wallet = 75;
 		for (int i = 0; i < 6 - difficulty; i++) {
@@ -89,161 +76,33 @@ public class Game {
 		}
 	}
 
-	String checkAnswer(String answ, ArrayList<String> checkList) {
-		while (!checkList.contains(answ.toLowerCase())) {
-			System.out.println("Введи ответ заново:");
-			answ = new Scanner(System.in).nextLine().toLowerCase();
-		}
-		return answ;
-	}
-
-	private boolean inputGamerUnitsArray(HashMap<String, Integer> unitsPrices, ArrayList<Unit> gamerUnitsArrayToAdd) {
-		HashMap<String, Integer> hasPurchasedStringMap = new HashMap<>();
-		int sum = 0;
-		boolean inputSucceed = true;
-		boolean answ = false;
-		while (true) {
-			ArrayList<String> purchaseStringList = new ArrayList<>(Arrays.asList(new Scanner(System.in).nextLine().toLowerCase().split(" "))); // строка "Герой Кол-во" из ввода
-			String purchaseUnitName;
-			int purchaseUnitCount;
-			switch (purchaseStringList.size()) {
-				case (3):
-					purchaseUnitName = (purchaseStringList.getFirst() + " " + purchaseStringList.get(1)).toLowerCase();
-					break;
-				case (2):
-					purchaseUnitName = purchaseStringList.getFirst().toLowerCase();
-					String supposedUnitName = (purchaseStringList.getFirst() + " " + purchaseStringList.get(1)).toLowerCase();
-					if (unitsPrices.containsKey(supposedUnitName)) {
-						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(new Scanner(System.in).nextLine());
-						purchaseUnitName = (purchaseStringList.getFirst() + " " + purchaseStringList.get(1)).toLowerCase();
+	public void setGamerUnits(HashMap<String, Integer> purchasedUnitsMap) {
+		String tempUnitName;
+		String tempPurchasedName;
+		String unitMapImage;
+		int order = 0;
+		int a;
+		for (String purchasedUnitName : purchasedUnitsMap.keySet()) {
+			int countToBuy = purchasedUnitsMap.get(purchasedUnitName);
+			for (Integer j = 0; j < countToBuy; j++) {
+				tempPurchasedName = purchasedUnitName.substring(0, 1).toUpperCase() + purchasedUnitName.substring(1);
+				for (a = 0; a < unitsTyping.size(); a++) {
+					if (unitsTyping.get(a).contains(tempPurchasedName)) {
 						break;
 					}
-					break;
-				case (1):
-					purchaseUnitName = purchaseStringList.getFirst().toLowerCase();
-					if (unitsPrices.containsKey(purchaseUnitName)) {
-						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(new Scanner(System.in).nextLine());
-						break;
-					}
-					if (hasPurchasedStringMap.keySet().isEmpty()) {
-						System.out.println("Похоже, ты пытаешься купить пустой набор воинов. Так нельзя!");
-						return false;
-					}
-					if (Objects.equals(checkAnswer(purchaseStringList.getFirst(), new ArrayList<>(Arrays.asList("да", "нет"))), "да")) {
-						answ = true;
-						break;
-					} else return false;
-				default:
-					System.out.println("Похоже, ты что-то неправильно написал:(");
-					return false;
-			}
-			if (!answ) {
-				if (!unitsPrices.containsKey(purchaseUnitName)) {
-					System.out.println("Похоже, ты неправильно написал имя героя:(");
-					inputSucceed = false;
 				}
-				if (isNotNumeric(purchaseStringList.getLast())) {
-					System.out.println("Похоже, ты неправильно написал число воинов:(");
-					return false;
-				} else {
-					purchaseUnitCount = Integer.parseInt(purchaseStringList.getLast());
-				}
-				if (!inputSucceed) {
-					return false;
-				} else {
-					if (sum + unitsPrices.get(purchaseUnitName) * purchaseUnitCount > wallet) {
-						System.out.println("На столько героев у тебя не хватает денег, возьми меньше или возьми других:");
-						System.out.println("У тебя осталось " + ANSI_RED + (wallet - sum) + ANSI_RESET +  " денежек в кошельке");
-						continue;
-					}
-					sum += unitsPrices.get(purchaseUnitName) * purchaseUnitCount;
-					if (hasPurchasedStringMap.containsKey(purchaseUnitName)) {
-						int temp = hasPurchasedStringMap.get(purchaseUnitName);
-						hasPurchasedStringMap.put(purchaseUnitName, temp + purchaseUnitCount);
-					} else {
-						hasPurchasedStringMap.put(purchaseUnitName, purchaseUnitCount);
-					}
-				}
-			}
-			System.out.println("У тебя осталось " + ANSI_RED + (wallet - sum) + ANSI_RESET + " денежек в кошельке");
-			if ((wallet - sum) < Collections.min(unitsPrices.values()) || answ) {
-				if (wallet != 0 && !answ) {
-					System.out.println("У тебя осталось недостаточно денег для покупки героев.");
-				}
-				System.out.println("Итого твой выбор:");
-				for (String unitName : hasPurchasedStringMap.keySet()) {
-					System.out.println(unitName + " " + hasPurchasedStringMap.get(unitName));
-				}
-				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String answer = new Scanner(System.in).nextLine().toLowerCase();
-				if (Objects.equals(checkAnswer(answer, new ArrayList<>(Arrays.asList("да", "нет"))), "да")) {
-					String tempUnitName;
-					String tempPurchasedName;
-					String unitMapImage;
-					int order = 0;
-					for (String purchasedUnitName : hasPurchasedStringMap.keySet()) {
-						int countToBuy = hasPurchasedStringMap.get(purchasedUnitName);
-						for (Integer j = 0; j < countToBuy; j++) {
-							int a;
-							tempPurchasedName = purchasedUnitName.substring(0, 1).toUpperCase() + purchasedUnitName.substring(1);
-							for (a = 0; a < unitsTyping.size(); a++) {
-								if (unitsTyping.get(a).contains(tempPurchasedName)) {
-									break;
-								}
-							}
-							tempUnitName = tempPurchasedName + " " + (j + 1);
-							order++;
-							unitMapImage = colorByType(a) + order + ANSI_RESET;
-							gamerUnitsArrayToAdd.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName), unitTypesPenalties.get(a),
-									battleMap.getBasicFields()));
-						}
-					}
-					return true;
-				} else return false;
+				tempUnitName = colorByType(a) + tempPurchasedName + " " + (j + 1) + ANSI_RESET;
+				order++;
+				unitMapImage = colorByType(a) + order + ANSI_RESET;
+				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName), unitTypesPenalties.get(a),
+						battleMap.getBasicFields()));
 			}
 		}
+		placeUnitsIntoMap(gamerUnitsArray, 0);
 	}
 
-	public void setGamerUnitsArray() {
-		printGamerUnitsArrayChoice();
-		String example1 = "Мечник 2";
-		System.out.println("Сейчас у тебя " + ANSI_RED + wallet + ANSI_RESET + " денежек;");
-		String purchaseString = """
-				Напиши в строку, каких и сколько героев хочешь взять, например:""" + example1 +
-				"""
-				\nЯ тебе отвечу, сколько у тебя осталось денег, ты сможешь далее покупать героев, пока у тебя остаются средства на них;
-				Также можешь написать Да, тогда процесс покупки закончится; нет - тогда процесс покупки начнется заново""";
-		System.out.println(purchaseString);
-		HashMap<String, Integer> unitsPrices = new HashMap<>();
-		for (String unitName : unitsSpecsMap.keySet()) {
-			unitsPrices.put(unitName.toLowerCase(), unitsSpecsMap.get(unitName).get(5)); // словарь "герой: цена", герой в lowerCase
-		}
-		while (!inputGamerUnitsArray(unitsPrices, gamerUnitsArray)) {
-			fillWallet(15, 15, gameDifficulty);
-			System.out.println("Сейчас у тебя " + ANSI_RED + wallet + ANSI_RESET + " денежек;");
-			System.out.println("Давай еще раз:");
-			System.out.println(purchaseString);
-		}
-		System.out.println("Твой набор героев:");
-		for (Unit unit : gamerUnitsArray) {
-			System.out.println(unit.getName() + "; ");
-		}
-	}
-
-	private String formattedTypeOfUnitsColumnName(ArrayList<String> fields, ArrayList<Float> penalties) {
-		return String.format(
-				"Штраф за 1 клетку:  %s: %.1f   %s: %.1f   %s: %.1f   %s: %.1f",
-				fields.getFirst(),
-				penalties.getFirst(),
-				fields.get(1),
-				penalties.get(1),
-				fields.get(2),
-				penalties.get(2),
-				fields.get(3),
-				penalties.get(3)
-		);
+	public int getWallet() {
+		return wallet;
 	}
 
 	private String colorByType(int unitsTyping) {
@@ -253,97 +112,6 @@ public class Game {
 			case (2) -> ANSI_BLUE;
 			default -> ANSI_RESET;
 		};
-	}
-
-	private String specsAlignmentByType(int unitsTyping) {
-		String color = colorByType(unitsTyping);
-		return "|  %2d  | " + color + "%-15s" + ANSI_RESET +
-				" |    %2d    |  %2d   |        %2d       |   %2d   |      %2d       |    %3d    |\n";
-	}
-
-	private void printGamerUnitsArrayChoice() {
-		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
-		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
-		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
-		String footColumnName = "|      |            Пешие           |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.getFirst()) + "      |\n";
-		String archerColumnName = "|      |           Лучники          |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(1)) + "      |\n";
-		String horseColumnName = "|      |           Всадники         |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(2)) + "      |\n";
-		String[] typeColumnNames = {footColumnName, archerColumnName, horseColumnName};
-		System.out.print(divider);
-		Object[] tempSpecs = new Object[8];
-		int iter = 1;
-		for (int i = 0; i < unitsTyping.size(); i++) {
-			System.out.print(typeColumnNames[i]);
-			System.out.print(divider);
-			System.out.print(columnNames);
-			System.out.print(divider);
-			for (int j = 0; j < unitsTyping.get(i).size(); j++) {
-				tempSpecs[0] = iter++;
-				tempSpecs[1] = unitsTyping.get(i).get(j);
-				for (int a = 2; a < 8; a++) {
-					tempSpecs[a] = unitsSpecsMap.get(unitsTyping.get(i).get(j)).get(a - 2);
-				}
-				System.out.format(specsAlignmentByType(i), tempSpecs);
-				System.out.print(divider);
-			}
-		}
-	}
-
-	private ArrayList<String> getCurrentUnitsState(ArrayList<Unit> unitsList) {
-		ArrayList<String> result = new ArrayList<>();
-		for (Unit unit : unitsList) {
-			result.add("| " + unit.getMapImage() + ")" + unit.getName() + " - " + "Здоровье:" +
-					ANSI_GREEN + unit.getHealthPoints() + ANSI_RESET + "; Защита:" + ANSI_BLUE + unit.getDefensePoints() + ANSI_RESET +
-					"; Атака:" + ANSI_RED + unit.getAttackPoints() + ANSI_RESET + "; |");
-			result.add("| Дальность атаки:" + unit.getAttackDistance() + "; Дальность перемещения:" + unit.getMovePoints() + " |");
-		}
-		return result;
-	}
-
-	private void printCurrentMapAndState() {
-		ArrayList<String> currentUnitsStateLines = getCurrentUnitsState(gamerUnitsArray);
-		int minLines = Math.min(battleMap.getSizeY(), currentUnitsStateLines.size());
-		System.out.print("   ");
-		for (int i = 1; i < 10; i++) {
-			System.out.format("%d ", i);
-		}
-		for (int i = 10; i < 16; i++) {
-			System.out.format("%d", i);
-		}
-		System.out.println(" X");
-		for (int i = 0; i < minLines; i++) {
-			printBattleMapLine(i);
-			System.out.println("  " + currentUnitsStateLines.get(i));
-		}
-		int a = battleMap.getSizeY() - currentUnitsStateLines.size();
-		if (a > 0) {
-			for (int i = minLines; i < minLines + a; i++) {
-				printBattleMapLine(i);
-				System.out.println();
-			}
-		} else if (a < 0) {
-			String emptyString = " ".repeat(3 + battleMap.getSizeX() * 2 + 2);
-			for (int i = minLines; i < minLines - a; i++) {
-				System.out.print(emptyString);
-				System.out.println(currentUnitsStateLines.get(i));
-			}
-		}
-		System.out.println("Y");
-	}
-
-	private void printBattleMapLine(int i) {
-		String[] battleLine;
-		System.out.format("%d ", i + 1);
-		if (i < 9) {
-			System.out.print(" ");
-		}
-		battleLine = battleMap.getBattleMapLine(i);
-		for (int j = 0; j < battleMap.getSizeX(); j++) {
-			System.out.print(battleLine[j] + " ");
-		}
 	}
 
 	private void placeUnitsIntoMap(ArrayList<Unit> unitsToPlace, int row) {
@@ -373,18 +141,6 @@ public class Game {
 		moveUnit.move(xMoveCoord, yMoveCoord);
 	}
 
-	private void exampleOfGame() {
-		ArrayList<String> exampleUnitStateList = getCurrentUnitsState(gamerUnitsArray);
-		for (String eachUnitState: exampleUnitStateList) {
-			System.out.println(eachUnitState);
-		}
-		System.out.print("Выбери героя по номеру:");
-		System.out.println("Твой выбор героя:1");
-		System.out.println("Выбери действие: Передвижение - 1, атака - 2:");
-		System.out.println("Твой выбор действия:1");
-		System.out.println("Дальше будет понятно (❛ᴗ❛)");
-	}
-
 	public void game() throws InterruptedException {
 		String inputHero, inputAction, inputAnswer;
 		String secondGamerActionString;
@@ -395,8 +151,6 @@ public class Game {
 		Unit selectedUnit, attackableUnit;
 		int inputHeroNum, xMoveCoord, yMoveCoord, secondGamerMove, secondGamerAct,
 				secondGamerFirstArg, secondGamerSecondArg, secondGamerThirdArg;
-		System.out.println("Каким образом играть? Сначала по номеру выбери героя, потом действие, и назначение действия, например:");
-		exampleOfGame();
 		System.out.println("Вперед, игра началась!");
 		ArrayList<String> heroCheck = new ArrayList<>() {{
 			for (int i = 0; i < gamerUnitsArray.size(); i++) {
@@ -557,5 +311,74 @@ public class Game {
 			printCurrentMapAndState();
 		}
 		System.out.println("Ты проиграл((");
+	}
+
+	public boolean endOfGame() {
+		return gamerUnitsArray.isEmpty() || secondGamerUnitsArray.isEmpty();
+	}
+
+	public boolean makeMove(String inputHeroNum, int moveType, int firstArg, int secondArg) {
+		Unit actionUnit = null;
+		switch (moveType) {
+			case (1):
+				for (Unit moveUnit: gamerUnitsArray) {
+					if (Objects.equals(inputHeroNum, moveUnit.getMapImage())) {
+						actionUnit = moveUnit;
+						break;
+					}
+				}
+				if (Objects.isNull(actionUnit)) {
+					return false;
+				}
+
+				break;
+			case(2):
+				break;
+			default:
+				return false;
+		}
+	}
+
+	public BattleMap getBattleMap() {
+		return battleMap;
+	}
+
+	public ArrayList<ArrayList<Float>> getUnitTypesPenalties() {
+		return unitTypesPenalties;
+	}
+
+	public ArrayList<ArrayList<String>> getUnitsTyping() {
+		return unitsTyping;
+	}
+
+	public HashMap<String, ArrayList<Integer>> getUnitsSpecsMap() {
+		return unitsSpecsMap;
+	}
+
+	public ArrayList<Unit> getGamerUnitsArray() {
+		return gamerUnitsArray;
+	}
+
+	public ArrayList<Unit> getSecondGamerUnitsArray() { return secondGamerUnitsArray; }
+
+	public ArrayList<Unit> checkHeroAttackableList(String inputHeroNum) {
+		Unit attackUnit = null;
+		ArrayList<Unit> returnList = new ArrayList<>();
+		for (Unit eachUnit: gamerUnitsArray) {
+			if (Objects.equals(ANSI_RESET + eachUnit.getMapImage(), inputHeroNum)) {
+				attackUnit = eachUnit;
+			}
+		}
+		for (Unit attackableUnit: secondGamerUnitsArray) {
+			assert attackUnit != null;
+			if (attackUnit.canAttack(attackableUnit)) {
+				returnList.add(attackableUnit);
+			}
+		}
+		return returnList;
+	}
+
+	public boolean checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
+
 	}
 }
