@@ -46,7 +46,7 @@ public class Bot {
 				}
 			}
 			botUnitsArray.add(new Unit(Game.ANSI_YELLOW + (i + 1) + Game.ANSI_RESET,
-					botUnitsNames.get(i),
+					Game.ANSI_YELLOW + botUnitsNames.get(i) + Game.ANSI_RESET,
 					unitsSpecsMap.get(unitSpecName),
 					unitTypesPenalties.get(type),
 					mapBasicFields

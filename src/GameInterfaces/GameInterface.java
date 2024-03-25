@@ -2,6 +2,7 @@ package GameInterfaces;
 
 import BattlePlace.BattleMap;
 import GameSubject.Game;
+import Gamers.Gamer;
 import Units.Unit;
 
 import java.util.*;
@@ -24,8 +25,9 @@ public class GameInterface {
 	public static final String ANSI_BLUE = "\u001B[34m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 	Game game;
+	Gamer gamer;
 
-	public void newGame() throws InterruptedException {
+	public int newGame(Gamer gamer) throws InterruptedException {
 		System.out.println("Добро пожаловать в игру Bauman's gate!");
 		TimeUnit.SECONDS.sleep(1);
 		System.out.print("Выберите сложность игры от 1 до 5:");
@@ -35,8 +37,12 @@ public class GameInterface {
 			}
 		}};
 		String answ = new Scanner(System.in).nextLine();
-		int gameDifficulty = Integer.parseInt(checkAnswer(answ, checkList));
-		game = new Game(gameDifficulty);
+		this.gamer = gamer;
+		return Integer.parseInt(checkAnswer(answ, checkList));
+	}
+
+	public void setGame(Game game) {
+		this.game = game;
 	}
 
 	String checkAnswer(String answ, ArrayList<String> checkList) {
@@ -77,7 +83,7 @@ public class GameInterface {
 				""");
 	}
 
-	public void fillGamerUnitsArray() {
+	public void fillGamerUnitsArray() throws InterruptedException {
 		ArrayList<String> purchaseStringList;
 		int sum = 0, purchaseUnitCount;
 		boolean answ;
@@ -88,7 +94,8 @@ public class GameInterface {
 			}
 		}};
 		String purchaseUnitName;
-		System.out.println("Сейчас у тебя " + ANSI_RED + game.getWallet() + ANSI_RESET + " денежек;");
+		printGamerUnitsArrayChoice();
+		TimeUnit.SECONDS.sleep(3);
 		String writeYourChoiceString = """
 				Напиши в строку, каких и сколько героев хочешь взять, например: Мечник 2
 				""";
@@ -100,12 +107,12 @@ public class GameInterface {
 		while (true) {
 			answ = false;
 			if (!hasPurchasedStringMap.keySet().isEmpty()) {
-				System.out.print("Твой набор сейчас:");
+				System.out.println("Твой набор сейчас: ");
 				for (String hasPurchasedUnitName: hasPurchasedStringMap.keySet()) {
-					System.out.println(hasPurchasedUnitName + ": " + hasPurchasedStringMap.get(hasPurchasedUnitName) + ", ");
+					System.out.println(hasPurchasedUnitName + ": " + hasPurchasedStringMap.get(hasPurchasedUnitName));
 				}
-				System.out.println("У тебя осталось " + ANSI_RED + (game.getWallet() - sum) + ANSI_RESET + " денежек в кошельке");
 			}
+			System.out.println("У тебя осталось " + ANSI_RED + (game.getWallet() - sum) + ANSI_RESET + " денежек в кошельке");
 			purchaseStringList = new ArrayList<>(Arrays.asList(new Scanner(System.in).nextLine().toLowerCase().split(" "))); // строка "Герой Кол-во" из ввода
 			switch (purchaseStringList.size()) {
 				case (3):
@@ -114,6 +121,8 @@ public class GameInterface {
 					break;
 				case (2):
 					if (unitsLowerNamePrices.containsKey(purchaseStringList.getFirst() + " " + purchaseStringList.get(1))) {
+						purchaseStringList.set(0, purchaseStringList.getFirst() + " " + purchaseStringList.get(1));
+						purchaseStringList.remove(1);
 						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
 						purchaseStringList.add(new Scanner(System.in).nextLine());
 						break;
@@ -145,6 +154,13 @@ public class GameInterface {
 					if (hasPurchasedStringMap.isEmpty()) {
 						System.out.println("Ты берешь пустой набор героев, так нельзя!");
 						continue;
+					} else {
+						game.setGamerUnits(hasPurchasedStringMap);
+						System.out.println("Твой набор героев:");
+						for (Unit unit : game.getGamerUnitsArray()) {
+							System.out.println(unit.getName());
+						}
+						return;
 					}
 				}
 			} else if (unitsLowerNamePrices.containsKey(purchaseStringList.getFirst()) && !isNotNumeric(purchaseStringList.getLast())) {
@@ -155,7 +171,8 @@ public class GameInterface {
 					continue;
 				}
 				if (hasPurchasedStringMap.containsKey(purchaseStringList.getFirst())) {
-					hasPurchasedStringMap.put(purchaseUnitName, purchaseUnitCount);
+					int purchasedCount = hasPurchasedStringMap.get(purchaseUnitName);
+					hasPurchasedStringMap.put(purchaseUnitName, purchaseUnitCount + purchasedCount);
 				}
 				else {
 					hasPurchasedStringMap.put(purchaseUnitName, purchaseUnitCount);
@@ -164,18 +181,23 @@ public class GameInterface {
 			}
 			else {
 				System.out.println("Ты что-то не так написал...");
+				System.out.println(writeYourChoiceString);
 				continue;
 			}
-			if (game.getWallet() < min(unitsLowerNamePrices.values())) {
+			if (game.getWallet() - sum < min(unitsLowerNamePrices.values())) {
 				System.out.println("У тебя осталось недостаточно денег для покупки героев.");
 				System.out.println("Итого твой выбор:");
 				for (String unitName : hasPurchasedStringMap.keySet()) {
-					System.out.println(unitName + " " + hasPurchasedStringMap.get(unitName));
+					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
 				String purchaseConfirmation = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), answerCheckList);
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					game.setGamerUnits(hasPurchasedStringMap);
+					System.out.println("Твой набор героев:");
+					for (Unit unit : game.getGamerUnitsArray()) {
+						System.out.println(unit.getName());
+					}
 					return;
 				}
 				else {
@@ -225,18 +247,9 @@ public class GameInterface {
 	}
 
 	private String specsAlignmentByType(int unitsTyping) {
-		String color = colorByType(unitsTyping);
+		String color = game.colorByType(unitsTyping);
 		return "|  %2d  | " + color + "%-15s" + ANSI_RESET +
 				" |    %2d    |  %2d   |        %2d       |   %2d   |      %2d       |    %3d    |\n";
-	}
-
-	private String colorByType(int unitsTyping) {
-		return switch (unitsTyping) {
-			case (0) -> ANSI_CYAN;
-			case (1) -> ANSI_RED;
-			case (2) -> ANSI_BLUE;
-			default -> ANSI_RESET;
-		};
 	}
 
 	private String formattedTypeOfUnitsColumnName(ArrayList<String> fields, ArrayList<Float> penalties) {
@@ -309,22 +322,31 @@ public class GameInterface {
 		}
 	}
 
+	private String removeAscii(String str) {
+		if (str.length() >= 5) {
+			return str.substring(5, 6);
+		}
+		return str;
+	}
+
 	public void gaming() throws InterruptedException {
-		int xMoveCoord, yMoveCoord, secondGamerMove, secondGamerAct,
-				secondGamerFirstArg, secondGamerSecondArg, secondGamerThirdArg, inputActionNum;
+		int xMoveCoord, yMoveCoord, checkRes,
+				inputActionNum;
 		printExampleOfGame();
 		TimeUnit.SECONDS.sleep(3);
-		String inputHero, inputAction, inputAnswer;
-		ArrayList<String> heroCheckList, attackableUnitsIndexList;
+		String inputHero, inputAction, inputAnswer, secondGamerActionString;
+		ArrayList<String> heroCheckList, attackableUnitsIndexList, inputCoords;
 		ArrayList<String> actionCheck = new ArrayList<>() {{
 			for (int i = 1; i < 3; i++) {
 				add(String.format("%d", i));
 			}
 		}};
+		boolean gamerWin = false;
 		while (!game.endOfGame()) {
+			inputCoords = new ArrayList<>();
 			heroCheckList = new ArrayList<>() {{
 				for (int i = 0; i < game.getGamerUnitsArray().size(); i++) {
-					add(String.format(ANSI_RESET + game.getGamerUnitsArray().get(i).getMapImage()));
+					add(removeAscii(game.getGamerUnitsArray().get(i).getMapImage()));
 				}
 			}};
 			System.out.println("Карта боевых действий:");
@@ -336,13 +358,8 @@ public class GameInterface {
 			inputActionNum = Integer.parseInt(inputAction);
 			if (inputActionNum == 2) {
 				ArrayList<Unit> attackableUnitsList = game.checkHeroAttackableList(inputHero);
-				attackableUnitsIndexList = new ArrayList<>(){{
-					for (Unit attackableUnit: attackableUnitsList) {
-						add(ANSI_RESET + attackableUnit.getMapImage());
-					}
-				}};
 				if (attackableUnitsList.isEmpty()) {
-					System.out.println("Этот герой никого атаковать не может!");
+					System.out.println("Герой " + game.getUnitByMapImage(inputHero).getName() + " сейчас никого атаковать не может!");
 					continue;
 				}
 				else if (attackableUnitsList.size() == 1) {
@@ -350,21 +367,71 @@ public class GameInterface {
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь?");
 					inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
-						game.makeMove(inputHero, 2, Integer.parseInt(attackableUnitsList.getFirst().getMapImage()), 0);
+						game.makeAttack(inputHero, inputAnswer);
 					}
+					continue;
 				}
 				else {
+					attackableUnitsIndexList = new ArrayList<>(){{
+					for (Unit attackableUnit: attackableUnitsList) {
+						add(removeAscii(attackableUnit.getMapImage()));
+					}
+				}};
 					System.out.println("Aтаковать можешь таких героев врага:");
 					for (Unit attackableUnit : attackableUnitsList) {
 							System.out.println(attackableUnit.getMapImage() + ")" + attackableUnit.getName());
 						}
 					System.out.println("Кого атакуешь? Напиши номер:");
-
+					inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), attackableUnitsIndexList);
+					game.makeAttack(inputHero, inputAnswer);
 				}
 			}
 			else if (inputActionNum == 1) {
-
+				System.out.print("Напиши координаты, куда хочешь сходить - x y:");
+				inputAnswer = new Scanner(System.in).nextLine();
+				inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
+				while (true) {
+					if (inputCoords.size() != 2) {
+						System.out.println("Ты что-то написал не так! Напиши координаты еще раз:");
+					} else if (isNotNumeric(inputCoords.getFirst()) || isNotNumeric(inputCoords.get(1))) {
+						System.out.println("Ты написал не числа! Напиши координаты еще раз:");
+					}
+					else {
+						xMoveCoord = Integer.parseInt(inputCoords.getFirst()) - 1;
+						yMoveCoord = Integer.parseInt(inputCoords.get(1)) - 1;
+						checkRes = game.checkHeroMoveAbility(inputHero, xMoveCoord, yMoveCoord);
+						if (checkRes == 1) {
+							System.out.println("Герои могут делать ход только в обычную клетку!");
+						}
+						else if (checkRes == 2) {
+							System.out.println("Герой " + game.getUnitByMapImage(inputHero).getName() + " не может пойти в эту клетку!");
+						}
+						else {
+							game.makeMove(inputHero, xMoveCoord, yMoveCoord);
+							break;
+						}
+					}
+					inputAnswer = new Scanner(System.in).nextLine();
+					inputCoords.clear();
+					inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
+				}
 			}
+			else {
+				System.out.println("Что-то пошло не так...");
+				continue;
+			}
+			System.out.println("Результат твоего хода:");
+			printCurrentMapAndState();
+			if (game.endOfGame()) {
+				System.out.println(ANSI_GREEN + "Ты выиграл!" + ANSI_RESET);
+				gamerWin = true;
+			}
+			secondGamerActionString = game.secondGamerMove();
+			System.out.println("Результат хода твоего противника:");
+			System.out.println(secondGamerActionString);
+		}
+		if (!gamerWin) {
+			System.out.println(ANSI_RED + "Ты проиграл!" + ANSI_RESET);
 		}
 	}
 }

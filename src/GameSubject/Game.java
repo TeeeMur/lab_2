@@ -53,13 +53,14 @@ public class Game {
 		add(new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
 	}};
 
-	public Game(int gameDifficulty) {
-		battleMap = new BattleMap(15, 15, gameDifficulty);
+	public Game(int difficulty) {
+		battleMap = new BattleMap(15, 15, difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), gameDifficulty);
-		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), gameDifficulty);
+				unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), difficulty);
+		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
+
 	private static boolean isNotNumeric(String str) {
 		try {
 			Integer.parseInt(str);
@@ -105,9 +106,9 @@ public class Game {
 		return wallet;
 	}
 
-	private String colorByType(int unitsTyping) {
+	public String colorByType(int unitsTyping) {
 		return switch (unitsTyping) {
-			case (0) -> ANSI_CYAN;
+			case (0) -> ANSI_GREEN;
 			case (1) -> ANSI_RED;
 			case (2) -> ANSI_BLUE;
 			default -> ANSI_RESET;
@@ -141,201 +142,40 @@ public class Game {
 		moveUnit.move(xMoveCoord, yMoveCoord);
 	}
 
-	public void game() throws InterruptedException {
-		String inputHero, inputAction, inputAnswer;
-		String secondGamerActionString;
-		boolean canAttackAnyone;
-		ArrayList<String> inputCoords = new ArrayList<>();
-		ArrayList<String> attackableUnitsIndexListToString = new ArrayList<>();
-		ArrayList<Integer> attackableUnitsIndexList = new ArrayList<>();
-		Unit selectedUnit, attackableUnit;
-		int inputHeroNum, xMoveCoord, yMoveCoord, secondGamerMove, secondGamerAct,
-				secondGamerFirstArg, secondGamerSecondArg, secondGamerThirdArg;
-		System.out.println("Вперед, игра началась!");
-		ArrayList<String> heroCheck = new ArrayList<>() {{
-			for (int i = 0; i < gamerUnitsArray.size(); i++) {
-				add(String.format("%d", i + 1));
+	public Unit getUnitByMapImage(String mapImage) {
+		mapImage = removeAscii(mapImage);
+		for (Unit eachUnit: gamerUnitsArray) {
+			if (Objects.equals(removeAscii(eachUnit.getMapImage()), mapImage)) {
+				return eachUnit;
 			}
-		}};
-		ArrayList<String> actionCheck = new ArrayList<>() {{
-			for (int i = 0; i < 2; i++) {
-				add(String.format("%d", i + 1));
-			}
-		}};
-		ArrayList<String> answerCheck = new ArrayList<>() {{
-			add("да");
-			add("нет");
-		}};
-		placeUnitsIntoMap(gamerUnitsArray, 0);
-		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
-		while (!gamerUnitsArray.isEmpty() && !secondGamerUnitsArray.isEmpty()) {
-			inputCoords.clear();
-			canAttackAnyone = false;
-			printCurrentMapAndState();
-			System.out.println("Выбери героя для хода по номеру:");
-			inputHero = checkAnswer(new Scanner(System.in).nextLine(), heroCheck);
-			if (isNotNumeric(inputHero)) {
-				System.out.println("Ты, похоже, написал не номер героя...");
-				continue;
-			}
-			else {
-				inputHeroNum = (Integer.parseInt(inputHero));
-				if ((inputHeroNum > gamerUnitsArray.size()) || (inputHeroNum <= 0)) {
-					System.out.println("Ты, похоже, написал не тот номер...");
-					continue;
-				}
-				else {
-					selectedUnit = gamerUnitsArray.get(inputHeroNum - 1);
-				}
-			}
-			System.out.println("Выбери действие: Передвижение - 1, атака - 2:");
-			inputAction = checkAnswer(new Scanner(System.in).nextLine(), actionCheck);
-			if (Objects.equals(inputAction, "2")) {
-				attackableUnitsIndexList.clear();
-				attackableUnitsIndexListToString.clear();
-				for (int i = 0; i < secondGamerUnitsArray.size(); i++) {
-					if (selectedUnit.canAttack(secondGamerUnitsArray.get(i))) {
-						attackableUnitsIndexList.add(i);
-						canAttackAnyone = true;
-					}
-				}
-				if (!canAttackAnyone) {
-					System.out.println("Твой герой " + gamerUnitsArray.get(Integer.parseInt(inputHero) - 1).getName() +
-							" не может никого атаковать, ни до кого не достает!");
-					continue;
-				}
-				else {
-					if (attackableUnitsIndexList.size() == 1) {
-						System.out.println("Атаковать можешь только одного: " + secondGamerUnitsArray.get(attackableUnitsIndexList.getFirst()).getName() +
-								"\nАтакуешь?");
-						inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), answerCheck);
-						if (Objects.equals(inputAnswer, "да")) {
-							attackableUnit = secondGamerUnitsArray.get(attackableUnitsIndexList.getFirst());
-							attackableUnit.getDamage(selectedUnit.getAttackPoints());
-							if (attackableUnit.checkDeath()) {
-								battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(), attackableUnit.getyCoord());
-								secondGamerUnitsArray.remove(attackableUnit);
-							}
-						}
-						else continue;
-					}
-					else {
-						System.out.println("Aтаковать можешь таких героев врага:");
-						for (Integer integer : attackableUnitsIndexList) {
-							System.out.println(secondGamerUnitsArray.get(integer).getMapImage() + ")" + secondGamerUnitsArray.get(integer).getName());
-						}
-						System.out.println("Кого атакуешь? Напиши номер:");
-						for (Integer i: attackableUnitsIndexList) {
-								attackableUnitsIndexListToString.add(String.format("%d", i + 1  ));
-							}
-						inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), attackableUnitsIndexListToString);
-						attackableUnit = secondGamerUnitsArray.get(Integer.parseInt(inputAnswer) - 1);
-						attackableUnit.getDamage(selectedUnit.getAttackPoints());
-						if (attackableUnit.checkDeath()) {
-							battleMap.placeSmth(battleMap.getBasicFields().getFirst(),attackableUnit.getxCoord(), attackableUnit.getyCoord());
-							secondGamerUnitsArray.remove(attackableUnit);
-						}
-					}
-				}
-			} else if (Objects.equals(inputAction, "1")) {
-				System.out.print("Напиши координаты, куда хочешь сходить - x y:");
-				inputAnswer = new Scanner(System.in).nextLine();
-				inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
-				while (true) {
-					if (inputCoords.size() != 2) {
-						System.out.println("Ты что-то написал не так! Напиши координаты еще раз:");
-					} else if (isNotNumeric(inputCoords.getFirst()) || isNotNumeric(inputCoords.get(1))) {
-						System.out.println("Ты написал не числа! Напиши координаты еще раз:");
-					}
-					else {
-						xMoveCoord = Integer.parseInt(inputCoords.getFirst()) - 1;
-						yMoveCoord = Integer.parseInt(inputCoords.get(1)) - 1;
-						break;
-					}
-					inputAnswer = new Scanner(System.in).nextLine();
-					inputCoords.clear();
-					inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
-				}
-				if (!Objects.equals(battleMap.getFieldByPosition(xMoveCoord, yMoveCoord), battleMap.getBasicFields().getFirst())) {
-					System.out.println("Герои могут делать ход только в обычную клетку!");
-					continue;
-				}
-				else if (!selectedUnit.canMove(xMoveCoord, yMoveCoord, battleMap)) {
-					System.out.println("Герой " + selectedUnit.getName() + " не может пойти в эту клетку!");
-					continue;
-				}
-				else {
-					replaceUnitInMap(selectedUnit, xMoveCoord, yMoveCoord);
-				}
-			}
-			else {
-				System.out.println("Похоже, ты что-то не так написал!");
-				continue;
-			}
-			System.out.println("Результат твоего хода:");
-			if (secondGamerUnitsArray.isEmpty()) {
-				System.out.println(ANSI_GREEN + "Ты выиграл!" + ANSI_RESET);
-				System.exit(0);
-			}
-			printCurrentMapAndState();
-			secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap);
-			secondGamerAct = secondGamerMove / (16 * 16 * 16);
-			secondGamerFirstArg = (secondGamerMove % (16 * 16 * 16)) / (16 * 16);
-			secondGamerSecondArg = secondGamerMove % 256 / 16;
-			secondGamerThirdArg = secondGamerMove % 16;
-			switch (secondGamerAct) {
-				case(1):
-					attackableUnit = gamerUnitsArray.get(secondGamerSecondArg);
-					attackableUnit.getDamage(
-							secondGamerUnitsArray.get(secondGamerFirstArg).getAttackPoints());
-					secondGamerActionString = secondGamerUnitsArray.get(secondGamerFirstArg).getName() + " атаковал твоего героя " +
-							attackableUnit.getName() + " и нанес " + attackableUnit.getAttackPoints() + " урона.";
-					if (attackableUnit.checkDeath()) {
-						battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(), attackableUnit.getyCoord());
-						gamerUnitsArray.remove(attackableUnit);
-						secondGamerActionString = secondGamerUnitsArray.get(secondGamerFirstArg).getName() + " атаковал твоего героя " +
-							attackableUnit.getName() + " и убил его ";
-					}
-					break;
-				case(2):
-					selectedUnit = secondGamerUnitsArray.get(secondGamerFirstArg);
-					replaceUnitInMap(selectedUnit, secondGamerSecondArg, secondGamerThirdArg);
-					secondGamerActionString = selectedUnit.getName() + " переместился на поле (" +
-							secondGamerSecondArg + "; " + secondGamerThirdArg + ").";
-					break;
-				default:
-					continue;
-			}
-			System.out.println("Результат хода твоего противника:");
-			System.out.println(secondGamerActionString);
-			printCurrentMapAndState();
 		}
-		System.out.println("Ты проиграл((");
+		return null;
 	}
 
 	public boolean endOfGame() {
 		return gamerUnitsArray.isEmpty() || secondGamerUnitsArray.isEmpty();
 	}
 
-	public boolean makeMove(String inputHeroNum, int moveType, int firstArg, int secondArg) {
-		Unit actionUnit = null;
-		switch (moveType) {
-			case (1):
-				for (Unit moveUnit: gamerUnitsArray) {
-					if (Objects.equals(inputHeroNum, moveUnit.getMapImage())) {
-						actionUnit = moveUnit;
-						break;
-					}
-				}
-				if (Objects.isNull(actionUnit)) {
-					return false;
-				}
+	private String removeAscii(String str) {
+		if (str.length() >= 5) {
+			return str.substring(5, 6);
+		}
+		return str;
+	}
 
-				break;
-			case(2):
-				break;
-			default:
-				return false;
+	public void makeMove(String inputHeroNum, int xCoord, int yCoord) {
+		Unit actionUnit = getUnitByMapImage(inputHeroNum);
+		replaceUnitInMap(actionUnit, xCoord, yCoord);
+	}
+
+	public int checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
+		Unit moveHero = getUnitByMapImage(inputHeroNum);
+		if (!Objects.equals(battleMap.getFieldByPosition(xCoord, yCoord), battleMap.getBasicFields().getFirst())) {
+			return 1;
+		} else if (!moveHero.canMove(xCoord, yCoord, battleMap)) {
+			return 2;
+		} else {
+			return 0;
 		}
 	}
 
@@ -362,13 +202,8 @@ public class Game {
 	public ArrayList<Unit> getSecondGamerUnitsArray() { return secondGamerUnitsArray; }
 
 	public ArrayList<Unit> checkHeroAttackableList(String inputHeroNum) {
-		Unit attackUnit = null;
+		Unit attackUnit = getUnitByMapImage(inputHeroNum);
 		ArrayList<Unit> returnList = new ArrayList<>();
-		for (Unit eachUnit: gamerUnitsArray) {
-			if (Objects.equals(ANSI_RESET + eachUnit.getMapImage(), inputHeroNum)) {
-				attackUnit = eachUnit;
-			}
-		}
 		for (Unit attackableUnit: secondGamerUnitsArray) {
 			assert attackUnit != null;
 			if (attackUnit.canAttack(attackableUnit)) {
@@ -378,7 +213,47 @@ public class Game {
 		return returnList;
 	}
 
-	public boolean checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
+	public void makeAttack(String attackHeroIndex, String attackableHeroIndex) {
+		Unit attackableUnit = getUnitByMapImage(removeAscii(attackableHeroIndex));
+		Unit attackUnit = getUnitByMapImage(removeAscii(attackHeroIndex));
+		attackableUnit.getDamage(attackUnit.getAttackPoints());
+		if (attackableUnit.checkDeath()) {
+			battleMap.placeSmth(battleMap.getBasicFields().getFirst(),attackableUnit.getxCoord(), attackableUnit.getyCoord());
+			secondGamerUnitsArray.remove(attackableUnit);
+		}
+	}
 
+	public String secondGamerMove() throws InterruptedException {
+		int secondGamerMove, secondGamerAct,
+				secondGamerFirstArg, secondGamerSecondArg, secondGamerThirdArg;
+		secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap);
+		secondGamerAct = secondGamerMove / (16 * 16 * 16);
+		secondGamerFirstArg = (secondGamerMove % (16 * 16 * 16)) / (16 * 16);
+		secondGamerSecondArg = secondGamerMove % 256 / 16;
+		secondGamerThirdArg = secondGamerMove % 16;
+		String secondGamerActionString;
+		switch (secondGamerAct) {
+			case (1):
+				Unit attackableUnit = gamerUnitsArray.get(secondGamerSecondArg);
+				attackableUnit.getDamage(
+						secondGamerUnitsArray.get(secondGamerFirstArg).getAttackPoints());
+				secondGamerActionString = secondGamerUnitsArray.get(secondGamerFirstArg).getName() + " атаковал твоего героя " +
+						attackableUnit.getName() + " и нанес " + attackableUnit.getAttackPoints() + " урона.";
+				if (attackableUnit.checkDeath()) {
+					battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(), attackableUnit.getyCoord());
+					gamerUnitsArray.remove(attackableUnit);
+					secondGamerActionString = secondGamerUnitsArray.get(secondGamerFirstArg).getName() + " атаковал твоего героя " +
+							attackableUnit.getName() + " и убил его ";
+				}
+				return secondGamerActionString;
+			case (2):
+				Unit selectedUnit = secondGamerUnitsArray.get(secondGamerFirstArg);
+				replaceUnitInMap(selectedUnit, secondGamerSecondArg, secondGamerThirdArg);
+				secondGamerActionString = selectedUnit.getName() + " переместился на поле (" +
+						(secondGamerSecondArg + 1) + "; " + (secondGamerThirdArg + 1) + ").";
+				return secondGamerActionString;
+			default:
+				return "Бот не сумел сходить...";
+		}
 	}
 }
