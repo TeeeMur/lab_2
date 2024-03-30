@@ -93,7 +93,7 @@ public class Unit {
 	public final boolean canAttack(Unit enemy) {
 		int xEnemy = enemy.getxCoord(), yEnemy = enemy.getyCoord();
 		double distance = sqrt(pow((xCoord - xEnemy), 2) + pow((yCoord - yEnemy), 2));
-		return distance < attackDistance;
+		return distance <= attackDistance;
 	}
 
 	public void move(int xCoordMoved, int yCoordMoved) {

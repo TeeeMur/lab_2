@@ -2,15 +2,17 @@ package Bots;
 
 import BattlePlace.BattleMap;
 import GameSubject.Game;
+import Units.Chernomor;
 import Units.Unit;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class Bot {
 
 	int botDifficulty;
 	Random random = new Random();
+
+	private final ArrayList<String> doubleAttackersIndexList;
 
 	public Bot(ArrayList<Unit> botUnitsArray, ArrayList<ArrayList<String>> unitsTyping,
 			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, ArrayList<ArrayList<Float>> unitTypesPenalties,
@@ -52,43 +54,115 @@ public class Bot {
 					mapBasicFields
 			));
 		}
+		if (botDifficulty == 5) {
+			botUnitsArray.add(new Chernomor(mapBasicFields));
+		}
+		doubleAttackersIndexList = new ArrayList<>();
+		for (int i = 0; i < difficulty - 2; i++) {
+			int a = random.nextInt(botUnitsNames.size());
+			while (doubleAttackersIndexList.contains(Game.ANSI_YELLOW + botUnitsNames.get(a) + Game.ANSI_RESET)) {
+				a = random.nextInt(botUnitsNames.size());
+			}
+			doubleAttackersIndexList.add(Game.ANSI_YELLOW + botUnitsNames.get(a) + Game.ANSI_RESET);
+		}
 	}
 
-	// Схема: 1 разряд - вид действия (передвижение/атака), 2 разряд - номер АТАКУЮЩЕГО героя бота,
-	// 3 разряд - номер АТАКУЕМОГО героя противника бота ИЛИ
-	// 2 разряд - номер ПЕРЕДВИГАЕМОГО героя, 3 разряд - координата Х, 4 разряд - координата Y
-	// все число - в 16-ричной системе счисления
-	public int botMove(ArrayList<Unit> botUnitsArray, ArrayList<Unit> enemyUnitsArray, BattleMap battleMap)
-			throws InterruptedException {
-		System.out.println("Ход бота...");
-		TimeUnit.SECONDS.sleep(random.nextInt(3) + 1);
+	// number:  2AB945
+	// indexes: 543210
+	// Scheme: 0 digit - type of action (double attack - 0/ attack - 1/ movement - 2/ chernomor portal creating - 3),
+	//DOUBLE ATTACK:
+	//	1st digit - index of the ATTACKING hero of the bot,
+	//	2nd digit is the index of the ATTACKED hero of the opponent bot,
+	//	3rd digit is the index of the SECOND ATTACKED hero of the opponent bot
+	//ATTACK:
+	//	1st digit - index of the ATTACKING hero of the bot,
+	//	2nd digit is the index of the ATTACKED hero of the opponent bot,
+	//	other digits - nothing
+	//MOVING:
+	//	1st digit is the index of the hero that is being MOVED,
+	//	2nd digit is the X coordinate
+	//	3rd digit is the Y coordinate
+	//	other digits - nothing
+	//CHERNOMOR PORTAL CREATING:
+	//	1st digit - number of chernomor hero of the bot
+	//	2nd digit - xStartCoord
+	//	3rd digit - yStartCoord
+	//	4th digit - xEndCoord
+	//	5th digit - yEndCoord
+	//	the whole number is in the 16-digit number system
+	public int botMove(ArrayList<Unit> botUnitsArray, ArrayList<Unit> enemyUnitsArray, BattleMap battleMap, ArrayList<ArrayList<Integer>> existingPortals) {
 		int actingBotUnitIndex;
+		int attackedEnemyUnitIndex = 0;
+		int secondAttackedEnemyUnitIndex;
+		int returnInteger = 0;
+		boolean breakAttackChoice = false;
 		for (actingBotUnitIndex = 0; actingBotUnitIndex < botUnitsArray.size(); actingBotUnitIndex++) {
-			for (int attackedEnemyUnit = 0; attackedEnemyUnit < enemyUnitsArray.size(); attackedEnemyUnit++) {
-				if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(attackedEnemyUnit))) {
-					return 16 * 16 * 16 + actingBotUnitIndex * 256 + attackedEnemyUnit * 16;
+			for (attackedEnemyUnitIndex = 0; attackedEnemyUnitIndex < enemyUnitsArray.size(); attackedEnemyUnitIndex++) {
+				if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(attackedEnemyUnitIndex))) {
+					returnInteger = attackedEnemyUnitIndex * 16 * 16 + actingBotUnitIndex * 16 + 1;
+					breakAttackChoice = true;
+					break;
 				}
 			}
+			if (breakAttackChoice) {break;}
+		}
+		if (breakAttackChoice) {
+			if (doubleAttackersIndexList.contains(botUnitsArray.get(actingBotUnitIndex).getName())) {
+				int attackedEnemyUnitHealth = enemyUnitsArray.get(attackedEnemyUnitIndex).getHealthPoints();
+				int attackedEnemyUnitDefense = enemyUnitsArray.get(attackedEnemyUnitIndex).getDefensePoints();
+				if (attackedEnemyUnitHealth + attackedEnemyUnitDefense - botUnitsArray.get(actingBotUnitIndex).getAttackPoints() <= 0) {
+					for (secondAttackedEnemyUnitIndex = 0; secondAttackedEnemyUnitIndex < enemyUnitsArray.size(); secondAttackedEnemyUnitIndex++) {
+						if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(secondAttackedEnemyUnitIndex)) &&
+							secondAttackedEnemyUnitIndex != attackedEnemyUnitIndex) {
+							returnInteger += (secondAttackedEnemyUnitIndex * 16 * 16 * 16 - 1);
+							break;
+						}
+					}
+				} else {
+					secondAttackedEnemyUnitIndex = attackedEnemyUnitIndex;
+					returnInteger += secondAttackedEnemyUnitIndex * 16 * 16 * 16 - 1;
+				}
+			}
+			return returnInteger;
 		}
 		actingBotUnitIndex = random.nextInt(botUnitsArray.size());
 		Unit actingUnit = botUnitsArray.get(actingBotUnitIndex);
+		if (actingUnit instanceof Chernomor) {
+			float acting = random.nextFloat();
+			if (acting >= 0.5f) {
+				ArrayList<ArrayList<Integer>> coordsList = ((Chernomor) actingUnit).createPortal(battleMap, existingPortals);
+				returnInteger = coordsList.get(1).get(1) * (int)Math.pow(16, 5) +
+						coordsList.get(1).get(0) * (int)Math.pow(16, 4) +
+						coordsList.get(0).get(1) * (int)Math.pow(16, 3) +
+						coordsList.get(0).get(0) * (int)Math.pow(16, 2) +
+						actingBotUnitIndex * 16 + 3;
+				return returnInteger;
+			}
+		}
 		int maxUnitMovePoints = actingUnit.getMovePoints();
 		int xCoordMove = actingUnit.getxCoord();
 		int yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 		int attempts = 0;
 		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) ||
 				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getBasicFields().getFirst())) {
+			xCoordMove = actingUnit.getxCoord();
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 			attempts++;
 			if (attempts > 10) {
 				actingBotUnitIndex = random.nextInt(botUnitsArray.size());
 				actingUnit = botUnitsArray.get(actingBotUnitIndex);
 				maxUnitMovePoints = actingUnit.getMovePoints();
+				xCoordMove = actingUnit.getxCoord();
 				yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 				attempts = 0;
 			}
 		}
-		return 2 * 16 * 16 * 16 + actingBotUnitIndex * 256 + xCoordMove * 16 + yCoordMove;
+		returnInteger = yCoordMove * 16 * 16 * 16 + xCoordMove * 16 * 16 + actingBotUnitIndex * 16 + 2;
+		return returnInteger;
+	}
+
+	public ArrayList<String> getDoubleAttackersIndexList() {
+		return doubleAttackersIndexList;
 	}
 
 }

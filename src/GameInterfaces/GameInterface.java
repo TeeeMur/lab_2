@@ -6,7 +6,6 @@ import Gamers.Gamer;
 import Units.Unit;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.min;
 
@@ -29,14 +28,13 @@ public class GameInterface {
 
 	public int newGame(Gamer gamer) throws InterruptedException {
 		System.out.println("Добро пожаловать в игру Bauman's gate!");
-		TimeUnit.SECONDS.sleep(1);
 		System.out.print("Выберите сложность игры от 1 до 5:");
 		ArrayList<String> checkList = new ArrayList<>() {{
 			for (int i = 1; i < 6; i++) {
 				add(String.format("%d", i));
 			}
 		}};
-		String answ = new Scanner(System.in).nextLine();
+		String answ = gamer.input();
 		this.gamer = gamer;
 		return Integer.parseInt(checkAnswer(answ, checkList));
 	}
@@ -53,7 +51,7 @@ public class GameInterface {
 				System.exit(0);
 			}
 			System.out.print("Ты ввел что-то не то, введи еще раз:");
-			answ = new Scanner(System.in).nextLine().toLowerCase();
+			answ = gamer.input().toLowerCase();
 		}
 		return answ;
 	}
@@ -95,11 +93,9 @@ public class GameInterface {
 		}};
 		String purchaseUnitName;
 		printGamerUnitsArrayChoice();
-		TimeUnit.SECONDS.sleep(3);
 		String writeYourChoiceString = """
-				Напиши в строку, каких и сколько героев хочешь взять, например: Мечник 2
-				""";
-		String writeAndAnswerChoiceString = writeYourChoiceString +
+				Напиши в строку, каких и сколько героев хочешь взять, например: Мечник 2""";
+		String writeAndAnswerChoiceString = writeYourChoiceString + "\n" +
 				"""
 				Я тебе отвечу, сколько у тебя осталось денег, ты сможешь далее покупать героев, пока у тебя остаются средства на них;
 				Также можешь написать Да, тогда процесс покупки закончится; нет - тогда процесс покупки начнется заново""";
@@ -113,7 +109,7 @@ public class GameInterface {
 				}
 			}
 			System.out.println("У тебя осталось " + ANSI_RED + (game.getWallet() - sum) + ANSI_RESET + " денежек в кошельке");
-			purchaseStringList = new ArrayList<>(Arrays.asList(new Scanner(System.in).nextLine().toLowerCase().split(" "))); // строка "Герой Кол-во" из ввода
+			purchaseStringList = new ArrayList<>(Arrays.asList(gamer.input().toLowerCase().split(" "))); // строка "Герой Кол-во" из ввода
 			switch (purchaseStringList.size()) {
 				case (3):
 					purchaseStringList.set(0, purchaseStringList.getFirst() + " " + purchaseStringList.get(1));
@@ -124,17 +120,17 @@ public class GameInterface {
 						purchaseStringList.set(0, purchaseStringList.getFirst() + " " + purchaseStringList.get(1));
 						purchaseStringList.remove(1);
 						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(new Scanner(System.in).nextLine());
+						purchaseStringList.add(gamer.input());
 						break;
 					}
 					break;
 				case (1):
 					if (unitsLowerNamePrices.containsKey(purchaseStringList.getFirst())) {
 						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(new Scanner(System.in).nextLine());
+						purchaseStringList.add(gamer.input());
 						break;
 					}
-					if (Objects.equals(checkAnswer(purchaseStringList.getFirst(), answerCheckList), "да")) {
+					if (answerCheckList.contains(purchaseStringList.getFirst())) {
 						answ = true;
 					}
 					break;
@@ -167,7 +163,7 @@ public class GameInterface {
 				purchaseUnitCount = Integer.parseInt(purchaseStringList.getLast());
 				purchaseUnitName = purchaseStringList.getFirst();
 				if (game.getWallet() - sum - unitsLowerNamePrices.get(purchaseUnitName) *  purchaseUnitCount < 0) {
-					System.out.print("У тебя не хватает денег на такую покупку, выбирай еще раз!");
+					System.out.println("У тебя не хватает денег на такую покупку, выбирай еще раз!");
 					continue;
 				}
 				if (hasPurchasedStringMap.containsKey(purchaseStringList.getFirst())) {
@@ -191,7 +187,7 @@ public class GameInterface {
 					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String purchaseConfirmation = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), answerCheckList);
+				String purchaseConfirmation = checkAnswer(gamer.input().toLowerCase(), answerCheckList);
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					game.setGamerUnits(hasPurchasedStringMap);
 					System.out.println("Твой набор героев:");
@@ -219,11 +215,11 @@ public class GameInterface {
 		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
-		String footColumnName = "|      |            Пешие           |   " +
+		String footColumnName = "|      |            " + ANSI_GREEN + "Пешие" + ANSI_RESET + "           |   " +
 				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.getFirst()) + "      |\n";
-		String archerColumnName = "|      |           Лучники          |   " +
+		String archerColumnName = "|      |           " + ANSI_RED + "Лучники" + ANSI_RESET + "          |   " +
 				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(1)) + "      |\n";
-		String horseColumnName = "|      |           Всадники         |   " +
+		String horseColumnName = "|      |           " + ANSI_BLUE + "Всадники" + ANSI_RESET + "         |   " +
 				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(2)) + "      |\n";
 		String[] typeColumnNames = {footColumnName, archerColumnName, horseColumnName};
 		System.out.print(divider);
@@ -268,19 +264,35 @@ public class GameInterface {
 
 	private ArrayList<String> getCurrentUnitsState(ArrayList<Unit> unitsList) {
 		ArrayList<String> result = new ArrayList<>();
+		String addString;
+		int maxLength = 0;
+		int thisLength;
 		for (Unit unit : unitsList) {
-			result.add("| " + unit.getMapImage() + ")" + unit.getName() + " - " + "Здоровье:" +
+			addString = "| " + unit.getMapImage() + ")" + unit.getName() + " - " + "Здоровье:" +
 					ANSI_GREEN + unit.getHealthPoints() + ANSI_RESET + "; Защита:" + ANSI_BLUE + unit.getDefensePoints() + ANSI_RESET +
-					"; Атака:" + ANSI_RED + unit.getAttackPoints() + ANSI_RESET + "; |");
+					"; Атака:" + ANSI_RED + unit.getAttackPoints() + ANSI_RESET + ";|";
+			thisLength = (addString).length();
+			if (thisLength > maxLength) {
+				maxLength = thisLength;
+			}
+			result.add(addString);
 			result.add("| Дальность атаки:" + unit.getAttackDistance() + "; Дальность перемещения:" + unit.getMovePoints() + " |");
+		}
+		String minus = ANSI_YELLOW + ANSI_RESET + ANSI_YELLOW + ANSI_RESET + ANSI_GREEN + ANSI_RESET + ANSI_BLUE + ANSI_RESET + ANSI_RED + ANSI_RESET;
+		for (int i = 0; i < result.size(); i++) {
+			addString = result.get(i);
+			if (i % 2 == 0) {
+				result.set(i, addString + " ".repeat(maxLength - addString.length()));
+			}
+			else {
+				result.set(i, addString + " ".repeat(maxLength - addString.length() - minus.length()));
+			}
 		}
 		return result;
 	}
 
 	private void printCurrentMapAndState() {
-		ArrayList<String> currentGamerUnitsStateLines = getCurrentUnitsState(game.getGamerUnitsArray());
-		currentGamerUnitsStateLines.add("Герои твоего врага:");
-		currentGamerUnitsStateLines.addAll(getCurrentUnitsState(game.getSecondGamerUnitsArray()));
+		ArrayList<String> currentGamerUnitsStateLines = getCurrentStateLines();
 		int minLines = Math.min(game.getBattleMap().getSizeY(), currentGamerUnitsStateLines.size());
 		System.out.print("   ");
 		for (int i = 1; i < 10; i++) {
@@ -300,14 +312,127 @@ public class GameInterface {
 				printBattleMapLine(i);
 				System.out.println();
 			}
+			System.out.println("Y");
 		} else if (a < 0) {
-			String emptyString = " ".repeat(3 + game.getBattleMap().getSizeX() * 2 + 2);
+			System.out.print("Y");
+			String emptyString = " ".repeat(game.getBattleMap().getSizeX() * 2 + 4);
 			for (int i = minLines; i < minLines - a; i++) {
-				System.out.print(emptyString);
+				if (i == minLines) {
+					System.out.print(emptyString);
+				}
+				else {
+					System.out.print(emptyString + " ");
+				}
 				System.out.println(currentGamerUnitsStateLines.get(i));
 			}
 		}
-		System.out.println("Y");
+	}
+
+	private ArrayList<String> getCurrentStateLines() {
+		ArrayList<String> gamerUnitsStateLines = new ArrayList<>() {{
+			add("Твои герои:");
+			addAll(getCurrentUnitsState(game.getGamerUnitsArray()));
+		}};
+		ArrayList<String> secondUnitsStateLines = new ArrayList<>() {{
+			add("Герои твоего врага:");
+			addAll(getCurrentUnitsState(game.getSecondGamerUnitsArray()));
+		}};
+		return getStrings(gamerUnitsStateLines, secondUnitsStateLines);
+	}
+
+	private ArrayList<String> getStrings(ArrayList<String> gamerUnitsStateLines, ArrayList<String> secondUnitsStateLines) {
+		ArrayList<String> currentGamerUnitsStateLines = new ArrayList<>();
+		int minUnitsStateLines = Math.min(gamerUnitsStateLines.size(), secondUnitsStateLines.size());
+		String adder = " ".repeat(57 - gamerUnitsStateLines.getFirst().length());
+		currentGamerUnitsStateLines.add(gamerUnitsStateLines.getFirst() + adder + secondUnitsStateLines.getFirst());
+		for (int i = 1; i < minUnitsStateLines; i++) {
+			currentGamerUnitsStateLines.add(gamerUnitsStateLines.get(i) + secondUnitsStateLines.get(i));
+		}
+		if (gamerUnitsStateLines.size() > secondUnitsStateLines.size()) {
+			for (int i = minUnitsStateLines; i < gamerUnitsStateLines.size(); i++) {
+				currentGamerUnitsStateLines.add(gamerUnitsStateLines.get(i));
+			}
+		}
+		else if (gamerUnitsStateLines.size() < secondUnitsStateLines.size()) {
+			for (int i = minUnitsStateLines; i < secondUnitsStateLines.size(); i++) {
+				adder = " ".repeat(56);
+				currentGamerUnitsStateLines.add(adder + secondUnitsStateLines.get(i));
+			}
+		}
+		return currentGamerUnitsStateLines;
+	}
+
+	//descriptionList must be like:
+	//get(0) - action type: attack double - 0, attack - 1, move - 2;
+	//get(1) - actionHero index in secondGamerUnitsArray;
+	//get(2) - action description: if attack - attackedHero index in
+	//gamerUnitsArray, else - xCoord
+	//get(3) - action description: if attack - attackPoints for first enemy (0 if he is killed), else - yCoord
+	//get(4) - action description: if attack - secondAttackedHero index in gamerUnitsArray, else -
+	//moving type: common - 0, by portal - 1
+	//get(5) - action description: if attack - attackPoints for second enemy (0 if he is killed), else - nothing
+	private String parseBotMoveDescription(ArrayList<Integer> descriptionList) {
+		ArrayList<String> attackedHeroNames = new ArrayList<>() {{
+			for (Unit eachUnit: game.getGamerUnitsArray()) {
+				add(eachUnit.getName());
+			};
+		}};
+		String actionHeroName = game.getSecondGamerUnitsArray().get(descriptionList.get(1)).getName();
+		String returnString, attackedHeroName, secondAttackedHeroName;
+		switch (descriptionList.get(0)) {
+			case (0):
+				attackedHeroName = attackedHeroNames.get(descriptionList.get(2));
+				secondAttackedHeroName = attackedHeroNames.get(descriptionList.get(4));
+				if (Objects.equals(descriptionList.get(2), descriptionList.get(4))) {
+					if (descriptionList.get(3) != 0) {
+					returnString = actionHeroName + " два раза атаковал твоего героя " +
+							attackedHeroName + " и нанес " + (descriptionList.get(3) * 2) + " урона.";
+					} else {
+						returnString = actionHeroName + " атаковал твоего героя " +
+								attackedHeroName + "и убил его второй атакой!";
+					}
+					return returnString;
+				} else {
+					if (descriptionList.get(3) != 0) {
+						returnString = actionHeroName + " атаковал твоего героя " +
+								attackedHeroName + " и нанес " + descriptionList.get(3) + " урона.";
+					} else {
+						returnString = actionHeroName + " убил твоего героя " + attackedHeroName;
+					}
+					if (descriptionList.get(5) != 0) {
+						returnString += "\nА еще..." + actionHeroName + " атаковал твоего героя " +
+								secondAttackedHeroName + " и нанес " + descriptionList.get(3) + " урона.";
+					} else {
+						returnString += "\nА еще..." + actionHeroName + " убил твоего героя " + secondAttackedHeroName + "!";
+					}
+				}
+				return returnString;
+			case (1):
+				attackedHeroName = attackedHeroNames.get(descriptionList.get(2));
+				if (descriptionList.get(3) != 0) {
+					returnString = actionHeroName + " атаковал твоего героя " +
+						attackedHeroName + " и нанес " + descriptionList.get(3) + " урона.";
+				}
+				else {
+					returnString = actionHeroName + " убил твоего героя " + attackedHeroName;
+				}
+				return returnString;
+			case (2):
+				String portalMoved = "";
+				if (descriptionList.get(4) != 0) {
+					portalMoved = "\nC помощью портала, созданного черномором!";
+				}
+				returnString = actionHeroName + " переместился на поле (" +
+						(descriptionList.get(2) + 1) + "; " + (descriptionList.get(3) + 1) + ")." + portalMoved;
+				return returnString;
+			case (3):
+				returnString = "Черномор создал портал с началом в поле (" + (descriptionList.get(2) + 1) + ";" +
+						(descriptionList.get(3) + 1) + ") и концом в поле (" + (descriptionList.get(4) + 1) + ";" +
+						(descriptionList.get(5) + 1) + ").";
+				return returnString;
+			default:
+				return "Бот что-то сделал...";
+		}
 	}
 
 	private void printBattleMapLine(int i) {
@@ -329,11 +454,9 @@ public class GameInterface {
 		return str;
 	}
 
-	public void gaming() throws InterruptedException {
+	public void gaming(){
 		int xMoveCoord, yMoveCoord, checkRes,
 				inputActionNum;
-		printExampleOfGame();
-		TimeUnit.SECONDS.sleep(3);
 		String inputHero, inputAction, inputAnswer, secondGamerActionString;
 		ArrayList<String> heroCheckList, attackableUnitsIndexList, inputCoords;
 		ArrayList<String> actionCheck = new ArrayList<>() {{
@@ -342,6 +465,7 @@ public class GameInterface {
 			}
 		}};
 		boolean gamerWin = false;
+		printExampleOfGame();
 		while (!game.endOfGame()) {
 			inputCoords = new ArrayList<>();
 			heroCheckList = new ArrayList<>() {{
@@ -349,25 +473,30 @@ public class GameInterface {
 					add(removeAscii(game.getGamerUnitsArray().get(i).getMapImage()));
 				}
 			}};
+			System.out.println("Порталы: " + game.getPortalsArray());
+			System.out.println("Кто умеет делать двойную атаку:");
+			for (String eachUnitName: game.getSecondGamer().getDoubleAttackersIndexList()) {
+				System.out.println(eachUnitName);
+			}
 			System.out.println("Карта боевых действий:");
 			printCurrentMapAndState();
 			System.out.print("Выбери героя для хода по номеру:");
-			inputHero = checkAnswer(new Scanner(System.in).nextLine(), heroCheckList);
+			inputHero = checkAnswer(gamer.input(), heroCheckList);
 			System.out.print("Выбери действие: Передвижение - 1, атака - 2:");
-			inputAction = checkAnswer(new Scanner(System.in).nextLine(), actionCheck);
+			inputAction = checkAnswer(gamer.input(), actionCheck);
 			inputActionNum = Integer.parseInt(inputAction);
 			if (inputActionNum == 2) {
 				ArrayList<Unit> attackableUnitsList = game.checkHeroAttackableList(inputHero);
 				if (attackableUnitsList.isEmpty()) {
-					System.out.println("Герой " + game.getUnitByMapImage(inputHero).getName() + " сейчас никого атаковать не может!");
+					System.out.println("Герой " + game.getUnitByMapImage(inputHero, false).getName() + " сейчас никого атаковать не может!");
 					continue;
 				}
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь?");
-					inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), answerCheckList);
+					inputAnswer = checkAnswer(gamer.input().toLowerCase(), answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
-						game.makeAttack(inputHero, inputAnswer);
+						game.makeAttack(false, inputHero, inputAnswer);
 					}
 					continue;
 				}
@@ -382,13 +511,13 @@ public class GameInterface {
 							System.out.println(attackableUnit.getMapImage() + ")" + attackableUnit.getName());
 						}
 					System.out.println("Кого атакуешь? Напиши номер:");
-					inputAnswer = checkAnswer(new Scanner(System.in).nextLine().toLowerCase(), attackableUnitsIndexList);
-					game.makeAttack(inputHero, inputAnswer);
+					inputAnswer = checkAnswer(gamer.input().toLowerCase(), attackableUnitsIndexList);
+					game.makeAttack(false, inputHero, inputAnswer);
 				}
 			}
 			else if (inputActionNum == 1) {
 				System.out.print("Напиши координаты, куда хочешь сходить - x y:");
-				inputAnswer = new Scanner(System.in).nextLine();
+				inputAnswer = gamer.input();
 				inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
 				while (true) {
 					if (inputCoords.size() != 2) {
@@ -404,14 +533,20 @@ public class GameInterface {
 							System.out.println("Герои могут делать ход только в обычную клетку!");
 						}
 						else if (checkRes == 2) {
-							System.out.println("Герой " + game.getUnitByMapImage(inputHero).getName() + " не может пойти в эту клетку!");
+							System.out.println("Герой " + game.getUnitByMapImage(inputHero, false).getName() + " не может пойти в эту клетку!");
+						}
+						else if (checkRes == 3) {
+							System.out.println("Такой клетки нет!!!");
 						}
 						else {
-							game.makeMove(inputHero, xMoveCoord, yMoveCoord);
+							boolean portalMoving = game.makeMove(inputHero, xMoveCoord, yMoveCoord);
+							if (portalMoving) {
+								System.out.println("Твой герой попал в портал!");
+							}
 							break;
 						}
 					}
-					inputAnswer = new Scanner(System.in).nextLine();
+					inputAnswer = gamer.input();
 					inputCoords.clear();
 					inputCoords.addAll(Arrays.asList(inputAnswer.split(" ")));
 				}
@@ -426,7 +561,8 @@ public class GameInterface {
 				System.out.println(ANSI_GREEN + "Ты выиграл!" + ANSI_RESET);
 				gamerWin = true;
 			}
-			secondGamerActionString = game.secondGamerMove();
+			System.out.println("Ход бота...");
+			secondGamerActionString = parseBotMoveDescription(game.secondGamerMove());
 			System.out.println("Результат хода твоего противника:");
 			System.out.println(secondGamerActionString);
 		}
