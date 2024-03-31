@@ -191,13 +191,19 @@ public class Game {
 
 	public int checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
 		Unit moveHero = getUnitByMapImage(inputHeroNum, false);
-		if (!Objects.equals(removeAscii(battleMap.getFieldByPosition(xCoord, yCoord)), battleMap.getBasicFields().getFirst())) {
-			return 1;
-		} else if (xCoord < 0 || xCoord >= 15 || yCoord < 0 || yCoord >= 15) {
+		if (xCoord < 0 || xCoord >= 15 || yCoord < 0 || yCoord >= 15) {
 			return 3;
+		} else if (!Objects.equals(removeAscii(battleMap.getFieldByPosition(xCoord, yCoord)), battleMap.getBasicFields().getFirst())) {
+			return 1;
 		} else if (!moveHero.canMove(xCoord, yCoord, battleMap)) {
 			return 2;
-		}  else {
+		} else {
+			for (ArrayList<Integer> eachPoral: portalsArray) {
+				if (eachPoral.getFirst() == xCoord && eachPoral.get(1) == yCoord || 
+				eachPoral.get(2) == xCoord && eachPoral.get(3) == yCoord) {
+					return 4;
+				}
+			}
 			return 0;
 		}
 	}

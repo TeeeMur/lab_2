@@ -23,6 +23,7 @@ public class GameInterface {
 	public static final String ANSI_RED = "\u001B[31m";
 	public static final String ANSI_BLUE = "\u001B[34m";
 	public static final String ANSI_CYAN = "\u001B[36m";
+	private final String colorUnitStateFormat = ANSI_YELLOW + ANSI_RESET + ANSI_YELLOW + ANSI_RESET + ANSI_GREEN + ANSI_RESET + ANSI_BLUE + ANSI_RESET + ANSI_RED + ANSI_RESET;
 	Game game;
 	Gamer gamer;
 
@@ -278,14 +279,13 @@ public class GameInterface {
 			result.add(addString);
 			result.add("| Дальность атаки:" + unit.getAttackDistance() + "; Дальность перемещения:" + unit.getMovePoints() + " |");
 		}
-		String minus = ANSI_YELLOW + ANSI_RESET + ANSI_YELLOW + ANSI_RESET + ANSI_GREEN + ANSI_RESET + ANSI_BLUE + ANSI_RESET + ANSI_RED + ANSI_RESET;
 		for (int i = 0; i < result.size(); i++) {
 			addString = result.get(i);
 			if (i % 2 == 0) {
 				result.set(i, addString + " ".repeat(maxLength - addString.length()));
 			}
 			else {
-				result.set(i, addString + " ".repeat(maxLength - addString.length() - minus.length()));
+				result.set(i, addString + " ".repeat(maxLength - addString.length() - colorUnitStateFormat.length()));
 			}
 		}
 		return result;
@@ -329,18 +329,26 @@ public class GameInterface {
 	}
 
 	private ArrayList<String> getCurrentStateLines() {
+		ArrayList<String> gamerUnitsArray = getCurrentUnitsState(game.getGamerUnitsArray());
+		int maxFirstColumnLength = 0;
+		for (String eachGamerUnitState: gamerUnitsArray) {
+			if (eachGamerUnitState.length() > maxFirstColumnLength) {
+				maxFirstColumnLength = eachGamerUnitState.length();
+			}
+		}
+		maxFirstColumnLength -= colorUnitStateFormat.length();
 		ArrayList<String> gamerUnitsStateLines = new ArrayList<>() {{
 			add("Твои герои:");
-			addAll(getCurrentUnitsState(game.getGamerUnitsArray()));
+			addAll(gamerUnitsArray);
 		}};
 		ArrayList<String> secondUnitsStateLines = new ArrayList<>() {{
 			add("Герои твоего врага:");
 			addAll(getCurrentUnitsState(game.getSecondGamerUnitsArray()));
 		}};
-		return getStrings(gamerUnitsStateLines, secondUnitsStateLines);
+		return getStrings(gamerUnitsStateLines, secondUnitsStateLines, maxFirstColumnLength);
 	}
 
-	private ArrayList<String> getStrings(ArrayList<String> gamerUnitsStateLines, ArrayList<String> secondUnitsStateLines) {
+	private ArrayList<String> getStrings(ArrayList<String> gamerUnitsStateLines, ArrayList<String> secondUnitsStateLines, int maxFirstColumnLength) {
 		ArrayList<String> currentGamerUnitsStateLines = new ArrayList<>();
 		int minUnitsStateLines = Math.min(gamerUnitsStateLines.size(), secondUnitsStateLines.size());
 		String adder = " ".repeat(57 - gamerUnitsStateLines.getFirst().length());
@@ -355,7 +363,7 @@ public class GameInterface {
 		}
 		else if (gamerUnitsStateLines.size() < secondUnitsStateLines.size()) {
 			for (int i = minUnitsStateLines; i < secondUnitsStateLines.size(); i++) {
-				adder = " ".repeat(56);
+				adder = " ".repeat(maxFirstColumnLength);
 				currentGamerUnitsStateLines.add(adder + secondUnitsStateLines.get(i));
 			}
 		}
@@ -371,12 +379,7 @@ public class GameInterface {
 	//get(4) - action description: if attack - secondAttackedHero index in gamerUnitsArray, else -
 	//moving type: common - 0, by portal - 1
 	//get(5) - action description: if attack - attackPoints for second enemy (0 if he is killed), else - nothing
-	private String parseBotMoveDescription(ArrayList<Integer> descriptionList) {
-		ArrayList<String> attackedHeroNames = new ArrayList<>() {{
-			for (Unit eachUnit: game.getGamerUnitsArray()) {
-				add(eachUnit.getName());
-			};
-		}};
+	private String parseBotMoveDescription(ArrayList<String> attackedHeroNames, ArrayList<Integer> descriptionList) {
 		String actionHeroName = game.getSecondGamerUnitsArray().get(descriptionList.get(1)).getName();
 		String returnString, attackedHeroName, secondAttackedHeroName;
 		switch (descriptionList.get(0)) {
@@ -389,7 +392,7 @@ public class GameInterface {
 							attackedHeroName + " и нанес " + (descriptionList.get(3) * 2) + " урона.";
 					} else {
 						returnString = actionHeroName + " атаковал твоего героя " +
-								attackedHeroName + "и убил его второй атакой!";
+								attackedHeroName + " и убил его второй атакой!";
 					}
 					return returnString;
 				} else {
@@ -538,6 +541,9 @@ public class GameInterface {
 						else if (checkRes == 3) {
 							System.out.println("Такой клетки нет!!!");
 						}
+						else if (checkRes == 4) {
+							System.out.println("Эта клетка принадлежит порталу, а этот портал занят!");
+						}
 						else {
 							boolean portalMoving = game.makeMove(inputHero, xMoveCoord, yMoveCoord);
 							if (portalMoving) {
@@ -562,7 +568,12 @@ public class GameInterface {
 				gamerWin = true;
 			}
 			System.out.println("Ход бота...");
-			secondGamerActionString = parseBotMoveDescription(game.secondGamerMove());
+			ArrayList <String> gamerUnitsNames = new ArrayList<>() {{
+				for (Unit gamerUnit: game.getGamerUnitsArray()) {
+					add(gamerUnit.getName());
+				}
+			}};
+			secondGamerActionString = parseBotMoveDescription(gamerUnitsNames, game.secondGamerMove());
 			System.out.println("Результат хода твоего противника:");
 			System.out.println(secondGamerActionString);
 		}
