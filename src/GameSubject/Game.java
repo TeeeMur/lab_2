@@ -12,7 +12,6 @@ import java.util.*;
 
 public class Game {
 
-	public static final String CONSOLE_FLUSH = "\033[H\033[2J";
 	public static final String ANSI_RESET = "\u001B[0m";
 	public static final String ANSI_YELLOW = "\u001B[33m";
 	public static final String ANSI_GREEN = "\u001B[32m";
@@ -132,7 +131,11 @@ public class Game {
 	}
 
 	private void replaceUnitInMap(Unit moveUnit, int xMoveCoord, int yMoveCoord) {
-		battleMap.placeSmth(battleMap.getBasicFields().getFirst(), moveUnit.getxCoord(), moveUnit.getyCoord());
+		String placeField = battleMap.getBasicFields().getFirst();
+		if (fieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord())) {
+			placeField = ANSI_CYAN + battleMap.getBasicFields().getFirst() + ANSI_RESET;
+		}
+		battleMap.placeSmth(placeField, moveUnit.getxCoord(), moveUnit.getyCoord());
 		battleMap.placeSmth(moveUnit.getMapImage(), xMoveCoord, yMoveCoord);
 		moveUnit.move(xMoveCoord, yMoveCoord);
 	}
@@ -198,9 +201,13 @@ public class Game {
 		} else if (!moveHero.canMove(xCoord, yCoord, battleMap)) {
 			return 2;
 		} else {
-			for (ArrayList<Integer> eachPoral: portalsArray) {
-				if (eachPoral.getFirst() == xCoord && eachPoral.get(1) == yCoord || 
-				eachPoral.get(2) == xCoord && eachPoral.get(3) == yCoord) {
+			for (ArrayList<Integer> eachPortal: portalsArray) {
+				if (eachPortal.getFirst() == xCoord && eachPortal.get(1) == yCoord &&
+						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.get(2), eachPortal.get(3))), battleMap.getBasicFields().getFirst()) ) {
+					return 4;
+				}
+				if (eachPortal.get(2) == xCoord && eachPortal.get(3) == yCoord &&
+						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.getFirst(), eachPortal.get(1))), battleMap.getBasicFields().getFirst())) {
 					return 4;
 				}
 			}
@@ -376,6 +383,10 @@ public class Game {
 					}
 					add(3);
 				}});
+				battleMap.placeSmth(ANSI_CYAN + battleMap.getFieldByPosition(moveParams.get(2), moveParams.get(3)) + ANSI_RESET,
+						moveParams.get(2), moveParams.get(3));
+				battleMap.placeSmth(ANSI_CYAN + battleMap.getFieldByPosition(moveParams.get(4), moveParams.get(5)) + ANSI_RESET,
+						moveParams.get(4), moveParams.get(5));
 				returnList.set(0, 3);
 				returnList.set(1, moveParams.get(1));
 				returnList.set(2, moveParams.get(2));
@@ -403,5 +414,15 @@ public class Game {
 
 	public ArrayList<ArrayList<Integer>> getPortalsArray() {
 		return portalsArray;
+	}
+
+	public boolean fieldIsPortal(int xCoord, int yCoord) {
+		for (ArrayList<Integer> eachPortal: portalsArray) {
+			if (xCoord == eachPortal.getFirst() && yCoord == eachPortal.get(1) ||
+			xCoord == eachPortal.get(2) && yCoord == eachPortal.get(3)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
