@@ -255,7 +255,7 @@ public class Game {
 		Unit attackUnit = getUnitByMapImage(removeAscii(attackHeroImage), side);
 		attackableUnit.getDamage(attackUnit.getAttackPoints());
 		if (attackableUnit.checkDeath()) {
-			if (!side && Objects.equals(attackableUnit.getName(), "Черномор")) {
+			if (!side && Objects.equals(removeAscii(attackableUnit.getName()), "Черномор")) {
 				portalsArray.clear();
 			}
 			battleMap.placeSmth(battleMap.getBasicFields().getFirst(),attackableUnit.getxCoord(),
@@ -397,12 +397,22 @@ public class Game {
 			default:
 				break;
 		}
-		for (ArrayList<Integer> eachPortal : portalsArray) {
-			if (eachPortal.getLast() == 1) {
-				portalsArray.remove(eachPortal);
+		for (int i = 0; i < portalsArray.size(); i++) {
+			if (portalsArray.get(i).getLast() == 1) {
+				if (Objects.equals(removeAscii(battleMap.getFieldByPosition(portalsArray.get(i).getFirst(), portalsArray.get(i).get(1))),
+						battleMap.getBasicFields().getFirst())) {
+					battleMap.placeSmth(battleMap.getBasicFields().getFirst(),
+						portalsArray.get(i).getFirst(), portalsArray.get(i).get(1));
+				}
+				if (Objects.equals(removeAscii(battleMap.getFieldByPosition(portalsArray.get(i).get(2), portalsArray.get(i).get(3))),
+						battleMap.getBasicFields().getFirst())) {
+					battleMap.placeSmth(battleMap.getBasicFields().getFirst(),
+						portalsArray.get(i).get(2), portalsArray.get(i).get(3));
+				}
+				portalsArray.remove(portalsArray.get(i));
 			} else {
-				int lastMoves = eachPortal.getLast();
-				eachPortal.set(4, lastMoves - 1);
+				int lastMoves = portalsArray.get(i).getLast();
+				portalsArray.get(i).set(4, lastMoves - 1);
 			}
 		}
 		return returnList;

@@ -501,7 +501,6 @@ public class GameInterface {
 					if (Objects.equals(inputAnswer, "да")) {
 						game.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 					}
-					continue;
 				}
 				else {
 					attackableUnitsIndexList = new ArrayList<>(){{
