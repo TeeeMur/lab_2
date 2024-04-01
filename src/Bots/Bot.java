@@ -22,7 +22,7 @@ public class Bot {
 		String unitName, unitSpecName;
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
-		for (int i = 0; i < 3 + difficulty; i++) {
+		for (int i = 0; i < 3; i++) {
 			unitNameCounter = 1;
 			choiceType = random.nextInt(unitsTyping.size());
 			choiceUnit = random.nextInt(unitsTyping.get(choiceType).size());
@@ -55,6 +55,9 @@ public class Bot {
 			));
 		}
 		if (botDifficulty == 5) {
+			botUnitsArray.add(new Chernomor(mapBasicFields));
+			botUnitsArray.add(new Chernomor(mapBasicFields));
+			botUnitsArray.add(new Chernomor(mapBasicFields));
 			botUnitsArray.add(new Chernomor(mapBasicFields));
 		}
 		doubleAttackersIndexList = new ArrayList<>();

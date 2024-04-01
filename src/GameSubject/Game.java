@@ -25,12 +25,12 @@ public class Game {
 
 	private final ArrayList<Unit> gamerUnitsArray = new ArrayList<>();
 	private final ArrayList<Unit> secondGamerUnitsArray = new ArrayList<>();
-	private ArrayList<String> portalsColoringArray = new ArrayList<>() {{
+	private final ArrayList<String> portalsColoringArray = new ArrayList<>() {{
 		add(ANSI_YELLOW);
 		add(ANSI_GREEN);
 		add(ANSI_BLUE);
 		add(ANSI_CYAN);
-	}}
+	}};
 	private final ArrayList<ArrayList<Integer>> portalsArray = new ArrayList<>();
 
 	private final ArrayList<ArrayList<String>> unitsTyping = new ArrayList<>() {{
@@ -137,8 +137,9 @@ public class Game {
 
 	private void replaceUnitInMap(Unit moveUnit, int xMoveCoord, int yMoveCoord) {
 		String placeField = battleMap.getBasicFields().getFirst();
-		if (fieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord())) {
-			placeField = ANSI_CYAN + battleMap.getBasicFields().getFirst() + ANSI_RESET;
+		int isPortal = fieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord());
+		if (isPortal != -1) {
+			placeField = portalsColoringArray.get(isPortal) + battleMap.getBasicFields().getFirst() + ANSI_RESET;
 		}
 		battleMap.placeSmth(placeField, moveUnit.getxCoord(), moveUnit.getyCoord());
 		battleMap.placeSmth(moveUnit.getMapImage(), xMoveCoord, yMoveCoord);
@@ -263,7 +264,7 @@ public class Game {
 			if (!side && Objects.equals(removeAscii(attackableUnit.getName()), "Черномор")) {
 				portalsArray.clear();
 			}
-			battleMap.placeSmth(battleMap.getBasicFields().getFirst(),attackableUnit.getxCoord(),
+			battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(),
 					attackableUnit.getyCoord());
 			secondGamerUnitsArray.remove(attackableUnit);
 		}
@@ -433,13 +434,13 @@ public class Game {
 		return portalsArray;
 	}
 
-	public boolean fieldIsPortal(int xCoord, int yCoord) {
-		for (ArrayList<Integer> eachPortal: portalsArray) {
-			if (xCoord == eachPortal.getFirst() && yCoord == eachPortal.get(1) ||
-			xCoord == eachPortal.get(2) && yCoord == eachPortal.get(3)) {
-				return true;
+	public int fieldIsPortal(int xCoord, int yCoord) {
+		for (int i = 0; i < portalsArray.size(); i++) {
+			if (xCoord == portalsArray.get(i).getFirst() && yCoord == portalsArray.get(i).get(1) ||
+			xCoord == portalsArray.get(i).get(2) && yCoord == portalsArray.get(i).get(3)) {
+				return i;
 			}
 		}
-		return false;
+		return -1;
 	}
 }

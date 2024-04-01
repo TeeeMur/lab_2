@@ -84,7 +84,7 @@ public class GameInterface {
 
 	public void fillGamerUnitsArray() throws InterruptedException {
 		ArrayList<String> purchaseStringList;
-		int sum = 0, purchaseUnitCount;
+		int sum = 0, purchaseUnitCount, unitsCount = 0;
 		boolean answ;
 		HashMap<String, Integer> hasPurchasedStringMap = new HashMap<>(),
 				unitsLowerNamePrices = new HashMap<>() {{
@@ -143,6 +143,7 @@ public class GameInterface {
 				if (Objects.equals(purchaseStringList.getFirst(), "нет")) {
 					hasPurchasedStringMap.clear();
 					sum = 0;
+					unitsCount = 0;
 					System.out.println("Набор юнитов начинается заново!");
 					printGamerUnitsArrayChoice();
 					System.out.println(writeYourChoiceString);
@@ -167,6 +168,11 @@ public class GameInterface {
 					System.out.println("У тебя не хватает денег на такую покупку, выбирай еще раз!");
 					continue;
 				}
+				if (unitsCount + purchaseUnitCount > 9) {
+					System.out.println("Больше 9 юнитов купить нельзя!");
+					continue;
+				}
+				unitsCount += purchaseUnitCount;
 				if (hasPurchasedStringMap.containsKey(purchaseStringList.getFirst())) {
 					int purchasedCount = hasPurchasedStringMap.get(purchaseUnitName);
 					hasPurchasedStringMap.put(purchaseUnitName, purchaseUnitCount + purchasedCount);
@@ -200,6 +206,7 @@ public class GameInterface {
 				else {
 					hasPurchasedStringMap.clear();
 					sum = 0;
+					unitsCount = 0;
 					System.out.println("Набор юнитов начинается заново!");
 					printGamerUnitsArrayChoice();
 					System.out.println(writeYourChoiceString);
