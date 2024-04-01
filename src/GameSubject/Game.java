@@ -25,7 +25,12 @@ public class Game {
 
 	private final ArrayList<Unit> gamerUnitsArray = new ArrayList<>();
 	private final ArrayList<Unit> secondGamerUnitsArray = new ArrayList<>();
-
+	private ArrayList<String> portalsColoringArray = new ArrayList<>() {{
+		add(ANSI_YELLOW);
+		add(ANSI_GREEN);
+		add(ANSI_BLUE);
+		add(ANSI_CYAN);
+	}}
 	private final ArrayList<ArrayList<Integer>> portalsArray = new ArrayList<>();
 
 	private final ArrayList<ArrayList<String>> unitsTyping = new ArrayList<>() {{
@@ -383,16 +388,18 @@ public class Game {
 					}
 					add(3);
 				}});
-				battleMap.placeSmth(ANSI_CYAN + battleMap.getFieldByPosition(moveParams.get(2), moveParams.get(3)) + ANSI_RESET,
+				int colorIndex = portalsArray.size();
+				if (colorIndex >= portalsColoringArray.size()) {
+					colorIndex = 0;
+				}
+				battleMap.placeSmth(portalsColoringArray.get(colorIndex) + battleMap.getFieldByPosition(moveParams.get(2), moveParams.get(3)) + ANSI_RESET,
 						moveParams.get(2), moveParams.get(3));
-				battleMap.placeSmth(ANSI_CYAN + battleMap.getFieldByPosition(moveParams.get(4), moveParams.get(5)) + ANSI_RESET,
+				battleMap.placeSmth(portalsColoringArray.get(colorIndex) + battleMap.getFieldByPosition(moveParams.get(4), moveParams.get(5)) + ANSI_RESET,
 						moveParams.get(4), moveParams.get(5));
 				returnList.set(0, 3);
-				returnList.set(1, moveParams.get(1));
-				returnList.set(2, moveParams.get(2));
-				returnList.set(3, moveParams.get(3));
-				returnList.set(4, moveParams.get(4));
-				returnList.set(5, moveParams.get(5));
+				for (int i = 1; i < 6; i++) {
+					returnList.set(i, moveParams.get(i));
+				}
 				break;
 			default:
 				break;
