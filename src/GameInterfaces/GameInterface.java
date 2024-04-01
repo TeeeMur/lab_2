@@ -496,10 +496,10 @@ public class GameInterface {
 				}
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
-							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь?");
+							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
 					inputAnswer = checkAnswer(gamer.input().toLowerCase(), answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
-						game.makeAttack(false, inputHero, inputAnswer);
+						game.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 					}
 					continue;
 				}

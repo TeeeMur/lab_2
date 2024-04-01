@@ -250,9 +250,9 @@ public class Game {
 	}
 
 	// side: false - gamer attacks bot, true - bot attacks gamer
-	public void makeAttack(boolean side, String attackHeroIndex, String attackableHeroIndex) {
-		Unit attackableUnit = getUnitByMapImage(removeAscii(attackableHeroIndex), !side);
-		Unit attackUnit = getUnitByMapImage(removeAscii(attackHeroIndex), side);
+	public void makeAttack(boolean side, String attackHeroImage, String attackableHeroImage) {
+		Unit attackableUnit = getUnitByMapImage(removeAscii(attackableHeroImage), !side);
+		Unit attackUnit = getUnitByMapImage(removeAscii(attackHeroImage), side);
 		attackableUnit.getDamage(attackUnit.getAttackPoints());
 		if (attackableUnit.checkDeath()) {
 			if (!side && Objects.equals(attackableUnit.getName(), "Черномор")) {
