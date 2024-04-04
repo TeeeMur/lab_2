@@ -56,9 +56,6 @@ public class Bot {
 		}
 		if (botDifficulty == 5) {
 			botUnitsArray.add(new Chernomor(mapBasicFields));
-			botUnitsArray.add(new Chernomor(mapBasicFields));
-			botUnitsArray.add(new Chernomor(mapBasicFields));
-			botUnitsArray.add(new Chernomor(mapBasicFields));
 		}
 		doubleAttackersIndexList = new ArrayList<>();
 		for (int i = 0; i < difficulty - 2; i++) {
@@ -99,12 +96,16 @@ public class Bot {
 		int secondAttackedEnemyUnitIndex;
 		int returnInteger = 0;
 		boolean breakAttackChoice = false;
+		ArrayList<Integer> attackableUnitsIndexList = new ArrayList<>();
 		for (actingBotUnitIndex = 0; actingBotUnitIndex < botUnitsArray.size(); actingBotUnitIndex++) {
-			for (attackedEnemyUnitIndex = 0; attackedEnemyUnitIndex < enemyUnitsArray.size(); attackedEnemyUnitIndex++) {
-				if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(attackedEnemyUnitIndex))) {
-					returnInteger = attackedEnemyUnitIndex * 16 * 16 + actingBotUnitIndex * 16 + 1;
-					breakAttackChoice = true;
-					break;
+			for (int i = 0; i < enemyUnitsArray.size(); i++) {
+				if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(i))) {
+					if (!breakAttackChoice) {
+						attackedEnemyUnitIndex = i;
+						returnInteger = i * 16 * 16 + actingBotUnitIndex * 16 + 1;
+						breakAttackChoice = true;
+					}
+					attackableUnitsIndexList.add(i);
 				}
 			}
 			if (breakAttackChoice) {break;}
@@ -113,7 +114,10 @@ public class Bot {
 			if (doubleAttackersIndexList.contains(botUnitsArray.get(actingBotUnitIndex).getName())) {
 				int attackedEnemyUnitHealth = enemyUnitsArray.get(attackedEnemyUnitIndex).getHealthPoints();
 				int attackedEnemyUnitDefense = enemyUnitsArray.get(attackedEnemyUnitIndex).getDefensePoints();
-				if (attackedEnemyUnitHealth + attackedEnemyUnitDefense - botUnitsArray.get(actingBotUnitIndex).getAttackPoints() <= 0) {
+				if (attackableUnitsIndexList.size() > 1) {
+					returnInteger += (attackableUnitsIndexList.get(1) * 16 * 16 * 16 - 1);
+					return returnInteger;
+				} else if (attackedEnemyUnitHealth + attackedEnemyUnitDefense - botUnitsArray.get(actingBotUnitIndex).getAttackPoints() <= 0) {
 					for (secondAttackedEnemyUnitIndex = 0; secondAttackedEnemyUnitIndex < enemyUnitsArray.size(); secondAttackedEnemyUnitIndex++) {
 						if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(secondAttackedEnemyUnitIndex)) &&
 							secondAttackedEnemyUnitIndex != attackedEnemyUnitIndex) {
@@ -146,11 +150,14 @@ public class Bot {
 		int xCoordMove = actingUnit.getxCoord();
 		int yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 		int attempts = 0;
-		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) ||
+		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) &&
 				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getBasicFields().getFirst())) {
 			xCoordMove = actingUnit.getxCoord();
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 			attempts++;
+			if (botUnitsArray.size() == 1) {
+				return -1;
+			}
 			if (attempts > 10) {
 				actingBotUnitIndex = random.nextInt(botUnitsArray.size());
 				actingUnit = botUnitsArray.get(actingBotUnitIndex);

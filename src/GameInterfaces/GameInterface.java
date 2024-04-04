@@ -52,7 +52,7 @@ public class GameInterface {
 				System.exit(0);
 			}
 			System.out.print("Ты ввел что-то не то, введи еще раз:");
-			answ = gamer.input().toLowerCase();
+			answ = gamer.input().toLowerCase().split(" ")[0];
 		}
 		return answ;
 	}
@@ -121,14 +121,14 @@ public class GameInterface {
 						purchaseStringList.set(0, purchaseStringList.getFirst() + " " + purchaseStringList.get(1));
 						purchaseStringList.remove(1);
 						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(gamer.input());
+						purchaseStringList.add(gamer.input().split(" ")[0]);
 						break;
 					}
 					break;
 				case (1):
 					if (unitsLowerNamePrices.containsKey(purchaseStringList.getFirst())) {
 						System.out.println("Похоже, ты не указал количество воинов! Укажи здесь:");
-						purchaseStringList.add(gamer.input());
+						purchaseStringList.add(gamer.input().split(" ")[0]);
 						break;
 					}
 					if (answerCheckList.contains(purchaseStringList.getFirst())) {
@@ -194,7 +194,7 @@ public class GameInterface {
 					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String purchaseConfirmation = checkAnswer(gamer.input().toLowerCase(), answerCheckList);
+				String purchaseConfirmation = checkAnswer(gamer.input().toLowerCase().split(" ")[0], answerCheckList);
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					game.setGamerUnits(hasPurchasedStringMap);
 					System.out.println("Твой набор героев:");
@@ -491,12 +491,12 @@ public class GameInterface {
 			System.out.println("Карта боевых действий:");
 			printCurrentMapAndState();
 			System.out.print("Выбери героя для хода по номеру:");
-			inputHero = checkAnswer(gamer.input(), heroCheckList);
+			inputHero = checkAnswer(gamer.input().split(" ")[0], heroCheckList);
 			System.out.print("Выбери действие: Передвижение - 1, атака - 2:");
-			inputAction = checkAnswer(gamer.input(), actionCheck);
+			inputAction = checkAnswer(gamer.input().split(" ")[0], actionCheck);
 			inputActionNum = Integer.parseInt(inputAction);
 			if (inputActionNum == 2) {
-				ArrayList<Unit> attackableUnitsList = game.checkHeroAttackableList(inputHero);
+				ArrayList<Unit> attackableUnitsList = game.checkHeroAttackableList(false, inputHero);
 				if (attackableUnitsList.isEmpty()) {
 					System.out.println("Герой " + game.getUnitByMapImage(inputHero, false).getName() + " сейчас никого атаковать не может!");
 					continue;
@@ -504,7 +504,7 @@ public class GameInterface {
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
-					inputAnswer = checkAnswer(gamer.input().toLowerCase(), answerCheckList);
+					inputAnswer = checkAnswer(gamer.input().toLowerCase().split(" ")[0], answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
 						game.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 					}
@@ -520,7 +520,7 @@ public class GameInterface {
 							System.out.println(attackableUnit.getMapImage() + ")" + attackableUnit.getName());
 						}
 					System.out.println("Кого атакуешь? Напиши номер:");
-					inputAnswer = checkAnswer(gamer.input().toLowerCase(), attackableUnitsIndexList);
+					inputAnswer = checkAnswer(gamer.input().toLowerCase().split(" ")[0], attackableUnitsIndexList);
 					game.makeAttack(false, inputHero, inputAnswer);
 				}
 			}

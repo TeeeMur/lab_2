@@ -243,10 +243,19 @@ public class Game {
 
 	public ArrayList<Unit> getSecondGamerUnitsArray() { return secondGamerUnitsArray; }
 
-	public ArrayList<Unit> checkHeroAttackableList(String inputHeroNum) {
-		Unit attackUnit = getUnitByMapImage(inputHeroNum, false);
+
+	// side: false - gamer attacks bot, true - bot attacks gamer
+	public ArrayList<Unit> checkHeroAttackableList(boolean side, String inputHeroNum) {
+		ArrayList<Unit> unitsArray;
+		if (side) {
+			unitsArray = gamerUnitsArray;
+		}
+		else {
+			unitsArray = secondGamerUnitsArray;
+		}
+		Unit attackUnit = getUnitByMapImage(inputHeroNum, side);
 		ArrayList<Unit> returnList = new ArrayList<>();
-		for (Unit attackableUnit: secondGamerUnitsArray) {
+		for (Unit attackableUnit: unitsArray) {
 			assert attackUnit != null;
 			if (attackUnit.canAttack(attackableUnit)) {
 				returnList.add(attackableUnit);
@@ -297,11 +306,16 @@ public class Game {
 	//	4th digit - xEndCoord
 	//	5th digit - yEndCoord
 	//	the whole number is in the 16-digit number system
+
 	public ArrayList<Integer> secondGamerMove() {
 		int secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray);
+		while (secondGamerMove == -1) {
+			secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray);
+		}
+		int finalSecondGamerMove = secondGamerMove;
 		ArrayList<Integer> moveParams = new ArrayList<>(){{
 			for (int i = 0; i < 6; i++) {
-				add((secondGamerMove / ((int)Math.pow(16, i)) % 16));
+				add((finalSecondGamerMove / ((int)Math.pow(16, i)) % 16));
 			}
 		}};
 		ArrayList<Integer> returnList = new ArrayList<>() {{
@@ -383,16 +397,16 @@ public class Game {
 				returnList.set(5, 0);
 				break;
 			case (3):
+				int colorIndex = portalsArray.size();
+				if (colorIndex >= portalsColoringArray.size()) {
+					colorIndex = 0;
+				}
 				portalsArray.add(new ArrayList<>() {{
 					for (int i = 2; i < 6; i++) {
 						add(moveParams.get(i));
 					}
 					add(3);
 				}});
-				int colorIndex = portalsArray.size();
-				if (colorIndex >= portalsColoringArray.size()) {
-					colorIndex = 0;
-				}
 				battleMap.placeSmth(portalsColoringArray.get(colorIndex) + battleMap.getFieldByPosition(moveParams.get(2), moveParams.get(3)) + ANSI_RESET,
 						moveParams.get(2), moveParams.get(3));
 				battleMap.placeSmth(portalsColoringArray.get(colorIndex) + battleMap.getFieldByPosition(moveParams.get(4), moveParams.get(5)) + ANSI_RESET,
