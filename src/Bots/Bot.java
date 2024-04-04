@@ -150,14 +150,17 @@ public class Bot {
 		int xCoordMove = actingUnit.getxCoord();
 		int yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 		int attempts = 0;
-		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) &&
+		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) ||
 				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getBasicFields().getFirst())) {
-			xCoordMove = actingUnit.getxCoord();
+			xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
-			attempts++;
-			if (botUnitsArray.size() == 1) {
-				return -1;
+			while (xCoordMove < 0 || xCoordMove > 14) {
+					xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
+				}
+			while (yCoordMove < 0 || yCoordMove > 14) {
+				yCoordMove = actingUnit.getyCoord() + random.nextInt(maxUnitMovePoints);
 			}
+			attempts++;
 			if (attempts > 10) {
 				actingBotUnitIndex = random.nextInt(botUnitsArray.size());
 				actingUnit = botUnitsArray.get(actingBotUnitIndex);

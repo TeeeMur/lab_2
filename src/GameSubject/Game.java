@@ -309,13 +309,9 @@ public class Game {
 
 	public ArrayList<Integer> secondGamerMove() {
 		int secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray);
-		while (secondGamerMove == -1) {
-			secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray);
-		}
-		int finalSecondGamerMove = secondGamerMove;
 		ArrayList<Integer> moveParams = new ArrayList<>(){{
 			for (int i = 0; i < 6; i++) {
-				add((finalSecondGamerMove / ((int)Math.pow(16, i)) % 16));
+				add((secondGamerMove / ((int)Math.pow(16, i)) % 16));
 			}
 		}};
 		ArrayList<Integer> returnList = new ArrayList<>() {{
