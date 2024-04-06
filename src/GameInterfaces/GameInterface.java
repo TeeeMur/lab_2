@@ -571,7 +571,7 @@ public class GameInterface {
 			printCurrentMapAndState();
 			if (game.endOfGame()) {
 				System.out.println(ANSI_GREEN + "Ты выиграл!" + ANSI_RESET);
-				gamerWin = true;
+				return;
 			}
 			System.out.println("Ход бота...");
 			ArrayList <String> gamerUnitsNames = new ArrayList<>() {{
@@ -583,8 +583,6 @@ public class GameInterface {
 			System.out.println("Результат хода твоего противника:");
 			System.out.println(secondGamerActionString);
 		}
-		if (!gamerWin) {
-			System.out.println(ANSI_RED + "Ты проиграл!" + ANSI_RESET);
-		}
+		System.out.println(ANSI_RED + "Ты проиграл!" + ANSI_RESET);
 	}
 }
