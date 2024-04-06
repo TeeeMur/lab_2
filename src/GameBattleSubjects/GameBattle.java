@@ -2,7 +2,7 @@
 	ИГРА РАССЧИТАНА МАКСИМУМ НА 9 ГЕРОЕВ С КАЖДОЙ СТОРОНЫ
  */
 
-package GameSubject;
+package GameBattleSubjects;
 
 import BattlePlace.BattleMap;
 import Bots.Bot;
@@ -10,7 +10,7 @@ import Units.Unit;
 
 import java.util.*;
 
-public class Game {
+public class GameBattle {
 
 	public static final String ANSI_RESET = "\u001B[0m";
 	public static final String ANSI_YELLOW = "\u001B[33m";
@@ -59,7 +59,7 @@ public class Game {
 		add(new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
 	}};
 
-	public Game(int difficulty) {
+	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
 				unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), difficulty);
@@ -169,8 +169,9 @@ public class Game {
 	}
 
 	private String removeAscii(String str) {
-		if (str.length() >= 5) {
-			return str.substring(5, 6);
+		int strLength = str.length();
+		if (strLength >= 5) {
+			return str.substring(5, strLength - 4);
 		}
 		return str;
 	}
@@ -271,6 +272,19 @@ public class Game {
 		attackableUnit.getDamage(attackUnit.getAttackPoints());
 		if (attackableUnit.checkDeath()) {
 			if (!side && Objects.equals(removeAscii(attackableUnit.getName()), "Черномор")) {
+				int xPortalCoord;
+				int yPortalCoord;
+				for (ArrayList<Integer> portal : portalsArray) {
+					for (int i = 0; i < 3; i += 2) {
+						xPortalCoord = portal.get(i);
+						yPortalCoord = portal.get(i + 1);
+						if (Objects.equals(removeAscii(battleMap.getFieldByPosition(xPortalCoord, yPortalCoord)), battleMap.getBasicFields().getFirst())) {
+							battleMap.placeSmth(battleMap.getBasicFields().getFirst(), xPortalCoord,
+									yPortalCoord);
+						}
+					}
+
+				}
 				portalsArray.clear();
 			}
 			battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(),

@@ -1,7 +1,7 @@
 package Bots;
 
 import BattlePlace.BattleMap;
-import GameSubject.Game;
+import GameBattleSubjects.GameBattle;
 import Units.Chernomor;
 import Units.Unit;
 
@@ -47,8 +47,8 @@ public class Bot {
 					break;
 				}
 			}
-			botUnitsArray.add(new Unit(Game.ANSI_YELLOW + (i + 1) + Game.ANSI_RESET,
-					Game.ANSI_YELLOW + botUnitsNames.get(i) + Game.ANSI_RESET,
+			botUnitsArray.add(new Unit(GameBattle.ANSI_YELLOW + (i + 1) + GameBattle.ANSI_RESET,
+					GameBattle.ANSI_YELLOW + botUnitsNames.get(i) + GameBattle.ANSI_RESET,
 					unitsSpecsMap.get(unitSpecName),
 					unitTypesPenalties.get(type),
 					mapBasicFields
@@ -60,10 +60,10 @@ public class Bot {
 		doubleAttackersIndexList = new ArrayList<>();
 		for (int i = 0; i < difficulty - 2; i++) {
 			int a = random.nextInt(botUnitsNames.size());
-			while (doubleAttackersIndexList.contains(Game.ANSI_YELLOW + botUnitsNames.get(a) + Game.ANSI_RESET)) {
+			while (doubleAttackersIndexList.contains(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET)) {
 				a = random.nextInt(botUnitsNames.size());
 			}
-			doubleAttackersIndexList.add(Game.ANSI_YELLOW + botUnitsNames.get(a) + Game.ANSI_RESET);
+			doubleAttackersIndexList.add(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET);
 		}
 	}
 

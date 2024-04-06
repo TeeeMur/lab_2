@@ -1,5 +1,5 @@
 import GameInterfaces.GameInterface;
-import GameSubject.Game;
+import GameBattleSubjects.GameBattle;
 import Gamers.Gamer;
 
 public class Main {
@@ -8,8 +8,8 @@ public class Main {
 		GameInterface gameInterface = new GameInterface();
 		Gamer gamer = new Gamer();
 		int diff = gameInterface.newGame(gamer);
-		Game game = new Game(diff);
-		gameInterface.setGame(game);
+		GameBattle gameBattle = new GameBattle(diff);
+		gameInterface.setGame(gameBattle);
 		gameInterface.fillGamerUnitsArray();
 		gameInterface.gaming();
 	}
