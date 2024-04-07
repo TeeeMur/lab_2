@@ -1,6 +1,6 @@
 package Units;
 
-import GameBattleSubjects.GameBattle;
+import GameSubjects.GameBattle;
 
 import java.util.*;
 
@@ -25,8 +25,8 @@ public class Chernomor extends Unit{
 				return false;
 			}
 		}
-		return Objects.equals(battleMap.getFieldByPosition(xStartCoord, yStartCoord), battleMap.getBasicFields().getFirst()) &&
-				Objects.equals(battleMap.getFieldByPosition(xEndCoord, yEndCoord), battleMap.getBasicFields().getFirst()) &&
+		return Objects.equals(battleMap.getFieldByPosition(xStartCoord, yStartCoord), battleMap.getDefaultFields().getFirst()) &&
+				Objects.equals(battleMap.getFieldByPosition(xEndCoord, yEndCoord), battleMap.getDefaultFields().getFirst()) &&
 				(Math.sqrt(Math.pow((xEndCoord - xStartCoord), 2) + Math.pow((yEndCoord - yStartCoord), 2)) >= 2);
 	}
 

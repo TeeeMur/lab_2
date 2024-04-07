@@ -1,12 +1,14 @@
 package GameInterfaces;
 
 import BattlePlace.BattleMap;
-import GameBattleSubjects.GameBattle;
+import GameSubjects.GameBattle;
 import Gamers.Gamer;
 import Units.Unit;
 
 import java.util.*;
 
+import static GameInterfaces.InputChecker.checkAnswer;
+import static GameInterfaces.InputChecker.isNotNumeric;
 import static java.util.Collections.min;
 
 public class GameInterface {
@@ -27,44 +29,33 @@ public class GameInterface {
 	GameBattle gameBattle;
 	Gamer gamer;
 
-	public int newGame(Gamer gamer) throws InterruptedException {
+	public GameInterface(Gamer gamer) {
+		this.gamer = gamer;
+	}
+	public int startGameInterface() {
+		System.out.println("Привет!");
+		System.out.print("Хочешь загрузиться с сохраненного файла - введи 1, начать новую игру - введи 2, " +
+				"создать новую карту - введи 3:");
+		return Integer.parseInt(checkAnswer(gamer, new Scanner(System.in).nextLine().split(" ")[0], new ArrayList<>(Arrays.asList("1", "2", "3"))));
+	}
+
+	public int newGameBattle() {
 		System.out.println("Добро пожаловать в игру Bauman's gate!");
-		System.out.print("Выберите сложность игры от 1 до 5:");
+		System.out.print("Выбери сложность игры от 1 до 5:");
 		ArrayList<String> checkList = new ArrayList<>() {{
 			for (int i = 1; i < 6; i++) {
 				add(String.format("%d", i));
 			}
 		}};
 		String answ = gamer.input();
-		this.gamer = gamer;
-		return Integer.parseInt(checkAnswer(answ, checkList));
+		return Integer.parseInt(checkAnswer(gamer, answ, checkList));
 	}
 
 	public void setGame(GameBattle gameBattle) {
 		this.gameBattle = gameBattle;
 	}
 
-	String checkAnswer(String answ, ArrayList<String> checkList) {
-		int exitCounter = 1;
-		while (!checkList.contains(answ.toLowerCase())) {
-			if (exitCounter++ > 5) {
-				System.out.println("Ты слишком долго пытался ввести ответ...");
-				System.exit(0);
-			}
-			System.out.print("Ты ввел что-то не то, введи еще раз:");
-			answ = gamer.input().toLowerCase().split(" ")[0];
-		}
-		return answ;
-	}
 
-	private static boolean isNotNumeric(String str) {
-		try {
-			Integer.parseInt(str);
-			return false;
-		} catch (NumberFormatException e) {
-			return true;
-		}
-	}
 
 	private void printExampleOfGame() {
 		System.out.println("Каким образом играть? Сначала по номеру выбери героя, потом действие, и назначение действия, например:");
@@ -194,7 +185,7 @@ public class GameInterface {
 					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String purchaseConfirmation = checkAnswer(gamer.input().toLowerCase().split(" ")[0], answerCheckList);
+				String purchaseConfirmation = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerCheckList);
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					gameBattle.setGamerUnits(hasPurchasedStringMap);
 					System.out.println("Твой набор героев:");
@@ -217,41 +208,42 @@ public class GameInterface {
 
 	private void printGamerUnitsArrayChoice() {
 		BattleMap battleMap = gameBattle.getBattleMap();
-		ArrayList<ArrayList<Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
-		ArrayList<ArrayList<String>> unitsTyping = gameBattle.getUnitsTyping();
+		HashMap<String, ArrayList<Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
+		HashMap<String, ArrayList<String>> unitsTyping = gameBattle.getUnitsTyping();
 		HashMap<String, ArrayList<Integer>> unitsSpecsMap = gameBattle.getUnitsSpecsMap();
+		ArrayList<String> unitsTypes = gameBattle.getUnitsTypes();
 		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
-		String footColumnName = "|      |            " + ANSI_GREEN + "Пешие" + ANSI_RESET + "           |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.getFirst()) + "      |\n";
-		String archerColumnName = "|      |           " + ANSI_RED + "Лучники" + ANSI_RESET + "          |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(1)) + "      |\n";
-		String horseColumnName = "|      |           " + ANSI_BLUE + "Всадники" + ANSI_RESET + "         |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getBasicFields(), unitTypesPenalties.get(2)) + "      |\n";
+		String footColumnName = "|      |            " + ANSI_GREEN + unitsTypes.getFirst() + ANSI_RESET + "           |   " +
+				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.getFirst())) + "      |\n";
+		String archerColumnName = "|      |           " + ANSI_RED + unitsTypes.get(1) + ANSI_RESET + "          |   " +
+				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.get(1))) + "      |\n";
+		String horseColumnName = "|      |           " + ANSI_BLUE + unitsTypes.get(2) + ANSI_RESET + "         |   " +
+				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.get(2))) + "      |\n";
 		String[] typeColumnNames = {footColumnName, archerColumnName, horseColumnName};
 		System.out.print(divider);
 		Object[] tempSpecs = new Object[8];
 		int iter = 1;
-		for (int i = 0; i < unitsTyping.size(); i++) {
+		for (int i = 0; i < unitsTypes.size(); i++) {
 			System.out.print(typeColumnNames[i]);
 			System.out.print(divider);
 			System.out.print(columnNames);
 			System.out.print(divider);
-			for (int j = 0; j < unitsTyping.get(i).size(); j++) {
+			for (int j = 0; j < unitsTyping.get(unitsTypes.get(i)).size(); j++) {
 				tempSpecs[0] = iter++;
-				tempSpecs[1] = unitsTyping.get(i).get(j);
+				tempSpecs[1] = unitsTyping.get(unitsTypes.get(i)).get(j);
 				for (int a = 2; a < 8; a++) {
-					tempSpecs[a] = unitsSpecsMap.get(unitsTyping.get(i).get(j)).get(a - 2);
+					tempSpecs[a] = unitsSpecsMap.get(unitsTyping.get(unitsTypes.get(i)).get(j)).get(a - 2);
 				}
-				System.out.format(specsAlignmentByType(i), tempSpecs);
+				System.out.format(specsAlignmentByType(unitsTypes.get(i)), tempSpecs);
 				System.out.print(divider);
 			}
 		}
 	}
 
-	private String specsAlignmentByType(int unitsTyping) {
-		String color = gameBattle.colorByType(unitsTyping);
+	private String specsAlignmentByType(String unitsType) {
+		String color = gameBattle.colorByType(unitsType);
 		return "|  %2d  | " + color + "%-15s" + ANSI_RESET +
 				" |    %2d    |  %2d   |        %2d       |   %2d   |      %2d       |    %3d    |\n";
 	}
@@ -474,7 +466,6 @@ public class GameInterface {
 				add(String.format("%d", i));
 			}
 		}};
-		boolean gamerWin = false;
 		printExampleOfGame();
 		while (!gameBattle.endOfGame()) {
 			inputCoords = new ArrayList<>();
@@ -491,9 +482,9 @@ public class GameInterface {
 			System.out.println("Карта боевых действий:");
 			printCurrentMapAndState();
 			System.out.print("Выбери героя для хода по номеру:");
-			inputHero = checkAnswer(gamer.input().split(" ")[0], heroCheckList);
+			inputHero = checkAnswer(gamer, gamer.input().split(" ")[0], heroCheckList);
 			System.out.print("Выбери действие: Передвижение - 1, атака - 2:");
-			inputAction = checkAnswer(gamer.input().split(" ")[0], actionCheck);
+			inputAction = checkAnswer(gamer, gamer.input().split(" ")[0], actionCheck);
 			inputActionNum = Integer.parseInt(inputAction);
 			if (inputActionNum == 2) {
 				ArrayList<Unit> attackableUnitsList = gameBattle.checkHeroAttackableList(false, inputHero);
@@ -504,7 +495,7 @@ public class GameInterface {
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
-					inputAnswer = checkAnswer(gamer.input().toLowerCase().split(" ")[0], answerCheckList);
+					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
 						gameBattle.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 					}
@@ -520,7 +511,7 @@ public class GameInterface {
 							System.out.println(attackableUnit.getMapImage() + ")" + attackableUnit.getName());
 						}
 					System.out.println("Кого атакуешь? Напиши номер:");
-					inputAnswer = checkAnswer(gamer.input().toLowerCase().split(" ")[0], attackableUnitsIndexList);
+					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], attackableUnitsIndexList);
 					gameBattle.makeAttack(false, inputHero, inputAnswer);
 				}
 			}

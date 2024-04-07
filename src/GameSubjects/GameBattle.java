@@ -2,7 +2,7 @@
 	ИГРА РАССЧИТАНА МАКСИМУМ НА 9 ГЕРОЕВ С КАЖДОЙ СТОРОНЫ
  */
 
-package GameBattleSubjects;
+package GameSubjects;
 
 import BattlePlace.BattleMap;
 import Bots.Bot;
@@ -33,36 +33,43 @@ public class GameBattle {
 	}};
 	private final ArrayList<ArrayList<Integer>> portalsArray = new ArrayList<>();
 
-	private final ArrayList<ArrayList<String>> unitsTyping = new ArrayList<>() {{
-		add(new ArrayList<>(Arrays.asList("Мечник", "Копьеносец", "Топорщик")));
-		add(new ArrayList<>(Arrays.asList("Тяжелый лучник", "Легкий лучник", "Арбалетчик")));
-		add(new ArrayList<>(Arrays.asList("Рыцарь", "Кирасир", "Конный лучник")));
-	}};
-	private final HashMap<String, ArrayList<Integer>> unitsSpecsMap = new HashMap<>() {{
-		//Foot units
-		put(unitsTyping.getFirst().getFirst(), new ArrayList<>(Arrays.asList(50, 5, 1, 8, 3, 10)));
-		put(unitsTyping.getFirst().get(1), new ArrayList<>(Arrays.asList(100, 100, 100, 100, 100, 5)));
-		put(unitsTyping.getFirst().get(2), new ArrayList<>(Arrays.asList(45, 9, 1, 3, 4, 20)));
-		//Bow units
-		put(unitsTyping.get(1).getFirst(), new ArrayList<>(Arrays.asList(30, 6, 5, 8, 2, 15)));
-		put(unitsTyping.get(1).get(1), new ArrayList<>(Arrays.asList(25, 3, 3, 4, 4, 19)));
-		put(unitsTyping.get(1).get(2), new ArrayList<>(Arrays.asList(40, 7, 6, 3, 2, 23)));
-		//Horse units
-		put(unitsTyping.get(2).getFirst(), new ArrayList<>(Arrays.asList(30, 5, 1, 3, 6, 20)));
-		put(unitsTyping.get(2).get(1), new ArrayList<>(Arrays.asList(50, 2, 1, 7, 5, 23)));
-		put(unitsTyping.get(2).get(2), new ArrayList<>(Arrays.asList(25, 3, 3, 2, 5, 25)));
+	private final ArrayList<String> unitsTypes = new ArrayList<>() {{
+		add("Пешие");
+		add("Лучники");
+		add("Конные");
 	}};
 
-	private final ArrayList<ArrayList<Float>> unitTypesPenalties = new ArrayList<>() {{
-		add(new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
-		add(new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
-		add(new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
+	private final HashMap<String, ArrayList<String>> unitsTyping = new HashMap<>() {{
+		put(unitsTypes.getFirst(), new ArrayList<>(Arrays.asList("Мечник", "Копьеносец", "Топорщик")));
+		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList("Тяжелый лучник", "Легкий лучник", "Арбалетчик")));
+		put(unitsTypes.get(2), new ArrayList<>(Arrays.asList("Рыцарь", "Кирасир", "Конный лучник")));
+	}};
+
+	private final HashMap<String, ArrayList<Integer>> unitsSpecsMap = new HashMap<>() {{
+		//Foot units
+		put(unitsTyping.get(unitsTypes.getFirst()).getFirst(), new ArrayList<>(Arrays.asList(50, 5, 1, 8, 3, 10)));
+		put(unitsTyping.get(unitsTypes.getFirst()).get(1), new ArrayList<>(Arrays.asList(100, 100, 100, 100, 100, 5)));
+		put(unitsTyping.get(unitsTypes.getFirst()).get(2), new ArrayList<>(Arrays.asList(45, 9, 1, 3, 4, 20)));
+		//Bow units
+		put(unitsTyping.get(unitsTypes.get(1)).getFirst(), new ArrayList<>(Arrays.asList(30, 6, 5, 8, 2, 15)));
+		put(unitsTyping.get(unitsTypes.get(1)).get(1), new ArrayList<>(Arrays.asList(25, 3, 3, 4, 4, 19)));
+		put(unitsTyping.get(unitsTypes.get(1)).get(2), new ArrayList<>(Arrays.asList(40, 7, 6, 3, 2, 23)));
+		//Horse units
+		put(unitsTyping.get(unitsTypes.get(2)).getFirst(), new ArrayList<>(Arrays.asList(30, 5, 1, 3, 6, 20)));
+		put(unitsTyping.get(unitsTypes.get(2)).get(1), new ArrayList<>(Arrays.asList(50, 2, 1, 7, 5, 23)));
+		put(unitsTyping.get(unitsTypes.get(2)).get(2), new ArrayList<>(Arrays.asList(25, 3, 3, 2, 5, 25)));
+	}};
+
+	private final HashMap<String, ArrayList<Float>> unitTypesPenalties = new HashMap<>() {{
+		put(unitsTypes.getFirst(), new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
+		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
+		put(unitsTypes.get(2), new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
 	}};
 
 	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenalties, battleMap.getBasicFields(), difficulty);
+				unitsSpecsMap, unitTypesPenalties, battleMap.getMapBasicFields(), difficulty);
 		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
@@ -79,23 +86,24 @@ public class GameBattle {
 		String tempPurchasedName;
 		String unitMapImage;
 		int order = 0;
-		int a;
 		for (String purchasedUnitName : purchasedUnitsMap.keySet()) {
 			int countToBuy = purchasedUnitsMap.get(purchasedUnitName);
 			for (Integer j = 0; j < countToBuy; j++) {
 				tempPurchasedName = purchasedUnitName.substring(0, 1).toUpperCase() +
 						purchasedUnitName.substring(1);
-				for (a = 0; a < unitsTyping.size(); a++) {
-					if (unitsTyping.get(a).contains(tempPurchasedName)) {
+				String unitPurchasedType = "";
+				for (String unitType: unitsTypes) {
+					if (unitsTyping.get(unitType).contains(tempPurchasedName)) {
+						unitPurchasedType = unitType;
 						break;
 					}
 				}
-				tempUnitName = colorByType(a) + tempPurchasedName + " " + (j + 1) + ANSI_RESET;
+				tempUnitName = colorByType(unitPurchasedType) + tempPurchasedName + " " + (j + 1) + ANSI_RESET;
 				order++;
-				unitMapImage = colorByType(a) + order + ANSI_RESET;
+				unitMapImage = colorByType(unitPurchasedType) + order + ANSI_RESET;
 				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName),
-						unitTypesPenalties.get(a),
-						battleMap.getBasicFields()));
+						unitTypesPenalties.get(unitPurchasedType),
+						battleMap.getMapBasicFields()));
 			}
 		}
 		placeUnitsIntoMap(gamerUnitsArray, 0);
@@ -105,13 +113,17 @@ public class GameBattle {
 		return wallet;
 	}
 
-	public String colorByType(int unitsTyping) {
-		return switch (unitsTyping) {
-			case (0) -> ANSI_GREEN;
-			case (1) -> ANSI_RED;
-			case (2) -> ANSI_BLUE;
-			default -> ANSI_RESET;
-		};
+	public String colorByType(String unitType) {
+		if (Objects.equals(unitType, unitsTypes.getFirst())) {
+			return ANSI_GREEN;
+		}
+		else if (Objects.equals(unitType, unitsTypes.get(1))) {
+			return ANSI_RED;
+		}
+		else if (Objects.equals(unitType, unitsTypes.get(2))) {
+			return ANSI_BLUE;
+		}
+		return ANSI_RESET;
 	}
 
 	private void placeUnitsIntoMap(ArrayList<Unit> unitsToPlace, int row) {
@@ -136,10 +148,10 @@ public class GameBattle {
 	}
 
 	private void replaceUnitInMap(Unit moveUnit, int xMoveCoord, int yMoveCoord) {
-		String placeField = battleMap.getBasicFields().getFirst();
+		String placeField = battleMap.getMapBasicFields().getFirst();
 		int isPortal = fieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord());
 		if (isPortal != -1) {
-			placeField = portalsColoringArray.get(isPortal) + battleMap.getBasicFields().getFirst() + ANSI_RESET;
+			placeField = portalsColoringArray.get(isPortal) + battleMap.getMapBasicFields().getFirst() + ANSI_RESET;
 		}
 		battleMap.placeSmth(placeField, moveUnit.getxCoord(), moveUnit.getyCoord());
 		battleMap.placeSmth(moveUnit.getMapImage(), xMoveCoord, yMoveCoord);
@@ -201,20 +213,21 @@ public class GameBattle {
 
 	public int checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
 		Unit moveHero = getUnitByMapImage(inputHeroNum, false);
+		ArrayList<String> mapBasicFields = battleMap.getMapBasicFields();
 		if (xCoord < 0 || xCoord >= 15 || yCoord < 0 || yCoord >= 15) {
 			return 3;
-		} else if (!Objects.equals(removeAscii(battleMap.getFieldByPosition(xCoord, yCoord)), battleMap.getBasicFields().getFirst())) {
+		} else if (!Objects.equals(removeAscii(battleMap.getFieldByPosition(xCoord, yCoord)), mapBasicFields.getFirst())) {
 			return 1;
 		} else if (!moveHero.canMove(xCoord, yCoord, battleMap)) {
 			return 2;
 		} else {
 			for (ArrayList<Integer> eachPortal: portalsArray) {
 				if (eachPortal.getFirst() == xCoord && eachPortal.get(1) == yCoord &&
-						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.get(2), eachPortal.get(3))), battleMap.getBasicFields().getFirst()) ) {
+						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.get(2), eachPortal.get(3))), mapBasicFields.getFirst()) ) {
 					return 4;
 				}
 				if (eachPortal.get(2) == xCoord && eachPortal.get(3) == yCoord &&
-						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.getFirst(), eachPortal.get(1))), battleMap.getBasicFields().getFirst())) {
+						!Objects.equals(removeAscii(battleMap.getFieldByPosition(eachPortal.getFirst(), eachPortal.get(1))), mapBasicFields.getFirst())) {
 					return 4;
 				}
 			}
@@ -226,12 +239,8 @@ public class GameBattle {
 		return battleMap;
 	}
 
-	public ArrayList<ArrayList<Float>> getUnitTypesPenalties() {
+	public HashMap<String, ArrayList<Float>> getUnitTypesPenalties() {
 		return unitTypesPenalties;
-	}
-
-	public ArrayList<ArrayList<String>> getUnitsTyping() {
-		return unitsTyping;
 	}
 
 	public HashMap<String, ArrayList<Integer>> getUnitsSpecsMap() {
@@ -278,8 +287,8 @@ public class GameBattle {
 					for (int i = 0; i < 3; i += 2) {
 						xPortalCoord = portal.get(i);
 						yPortalCoord = portal.get(i + 1);
-						if (Objects.equals(removeAscii(battleMap.getFieldByPosition(xPortalCoord, yPortalCoord)), battleMap.getBasicFields().getFirst())) {
-							battleMap.placeSmth(battleMap.getBasicFields().getFirst(), xPortalCoord,
+						if (Objects.equals(removeAscii(battleMap.getFieldByPosition(xPortalCoord, yPortalCoord)), battleMap.getMapBasicFields().getFirst())) {
+							battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), xPortalCoord,
 									yPortalCoord);
 						}
 					}
@@ -287,7 +296,7 @@ public class GameBattle {
 				}
 				portalsArray.clear();
 			}
-			battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(),
+			battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 					attackableUnit.getyCoord());
 			secondGamerUnitsArray.remove(attackableUnit);
 		}
@@ -349,7 +358,7 @@ public class GameBattle {
 				returnList.set(4, moveParams.get(3));
 				returnList.set(5, secondGamerUnitsArray.get(moveParams.get(1)).getAttackPoints());
 				if (attackableUnit.checkDeath()) {
-					battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(),
+					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 							attackableUnit.getyCoord());
 					gamerUnitsArray.remove(attackableUnit);
 					returnList.set(3, 0);
@@ -358,7 +367,7 @@ public class GameBattle {
 					}
 				}
 				if (!Objects.equals(moveParams.get(2), moveParams.get(3)) && secondAttackableUnit.checkDeath()) {
-					battleMap.placeSmth(battleMap.getBasicFields().getFirst(), secondAttackableUnit.getxCoord(),
+					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), secondAttackableUnit.getxCoord(),
 							secondAttackableUnit.getyCoord());
 					gamerUnitsArray.remove(secondAttackableUnit);
 					returnList.set(5, 0);
@@ -375,7 +384,7 @@ public class GameBattle {
 				returnList.set(4, 0);
 				returnList.set(5, 0);
 				if (attackableUnit.checkDeath()) {
-					battleMap.placeSmth(battleMap.getBasicFields().getFirst(), attackableUnit.getxCoord(),
+					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 							attackableUnit.getyCoord());
 					gamerUnitsArray.remove(attackableUnit);
 					returnList.set(3, 0);
@@ -432,13 +441,13 @@ public class GameBattle {
 		for (int i = 0; i < portalsArray.size(); i++) {
 			if (portalsArray.get(i).getLast() == 1) {
 				if (Objects.equals(removeAscii(battleMap.getFieldByPosition(portalsArray.get(i).getFirst(), portalsArray.get(i).get(1))),
-						battleMap.getBasicFields().getFirst())) {
-					battleMap.placeSmth(battleMap.getBasicFields().getFirst(),
+						battleMap.getMapBasicFields().getFirst())) {
+					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(),
 						portalsArray.get(i).getFirst(), portalsArray.get(i).get(1));
 				}
 				if (Objects.equals(removeAscii(battleMap.getFieldByPosition(portalsArray.get(i).get(2), portalsArray.get(i).get(3))),
-						battleMap.getBasicFields().getFirst())) {
-					battleMap.placeSmth(battleMap.getBasicFields().getFirst(),
+						battleMap.getMapBasicFields().getFirst())) {
+					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(),
 						portalsArray.get(i).get(2), portalsArray.get(i).get(3));
 				}
 				portalsArray.remove(portalsArray.get(i));
@@ -456,6 +465,14 @@ public class GameBattle {
 
 	public ArrayList<ArrayList<Integer>> getPortalsArray() {
 		return portalsArray;
+	}
+
+	public HashMap<String, ArrayList<String>> getUnitsTyping() {
+		return unitsTyping;
+	}
+
+	public ArrayList<String> getUnitsTypes() {
+		return unitsTypes;
 	}
 
 	public int fieldIsPortal(int xCoord, int yCoord) {

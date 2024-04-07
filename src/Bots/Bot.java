@@ -1,7 +1,7 @@
 package Bots;
 
 import BattlePlace.BattleMap;
-import GameBattleSubjects.GameBattle;
+import GameSubjects.GameBattle;
 import Units.Chernomor;
 import Units.Unit;
 
@@ -14,36 +14,37 @@ public class Bot {
 
 	private final ArrayList<String> doubleAttackersIndexList;
 
-	public Bot(ArrayList<Unit> botUnitsArray, ArrayList<ArrayList<String>> unitsTyping,
-			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, ArrayList<ArrayList<Float>> unitTypesPenalties,
+	public Bot(ArrayList<Unit> botUnitsArray, HashMap<String, ArrayList<String>> unitsTyping,
+			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, HashMap<String, ArrayList<Float>> unitTypesPenalties,
 			   ArrayList<String> mapBasicFields, int difficulty) {
 		botDifficulty = difficulty;
-		int choiceType, choiceUnit, unitNameCounter;
+		int randomType, choiceUnit, unitNameCounter;
 		String unitName, unitSpecName;
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
+		ArrayList<String> choiceTypes = new ArrayList<>(unitsTyping.keySet());
 		for (int i = 0; i < 3; i++) {
 			unitNameCounter = 1;
-			choiceType = random.nextInt(unitsTyping.size());
-			choiceUnit = random.nextInt(unitsTyping.get(choiceType).size());
-			unitName = unitsTyping.get(choiceType).get(choiceUnit) + " " + unitNameCounter;
+			randomType = random.nextInt(choiceTypes.size());
+			choiceUnit = random.nextInt(unitsTyping.get(choiceTypes.get(randomType)).size());
+			unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
 			while (botUnitsNames.contains(unitName)) {
 				unitNameCounter += 1;
-				unitName = unitsTyping.get(choiceType).get(choiceUnit) + " " + unitNameCounter;
+				unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
 			}
 			botUnitsNames.add(unitName);
 		}
 		botUnitsNames.sort(Comparator.naturalOrder());
-		int type = 0;
 		for (int i = 0; i < botUnitsNames.size(); i++) {
 			specNameSplit = botUnitsNames.get(i).split(" ");
 			unitSpecName = specNameSplit[0];
+			String type = "";
 			if (specNameSplit.length == 3) {
 				unitSpecName = unitSpecName + " " + specNameSplit[1];
 			}
-			for (int j = 0; j < unitsTyping.size(); j++) {
-				if (unitsTyping.get(j).contains(unitSpecName)) {
-					type = j;
+			for (String unitType: choiceTypes) {
+				if (unitsTyping.get(unitType).contains(unitSpecName)) {
+					type = unitType;
 					break;
 				}
 			}
@@ -151,7 +152,7 @@ public class Bot {
 		int yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 		int attempts = 0;
 		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) ||
-				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getBasicFields().getFirst())) {
+				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getDefaultFields().getFirst())) {
 			xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 			while (xCoordMove < 0 || xCoordMove > 14) {
