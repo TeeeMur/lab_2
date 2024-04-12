@@ -33,7 +33,7 @@ public class GameBattle {
 	}};
 	private final ArrayList<ArrayList<Integer>> portalsArray = new ArrayList<>();
 
-	private final ArrayList<String> unitsTypes = new ArrayList<>() {{
+	private static final ArrayList<String> unitsTypes = new ArrayList<>() {{
 		add("Пешие");
 		add("Лучники");
 		add("Конные");
@@ -62,14 +62,35 @@ public class GameBattle {
 
 	private final HashMap<String, ArrayList<Float>> unitTypesPenalties = new HashMap<>() {{
 		put(unitsTypes.getFirst(), new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
-		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
+		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList(1f, 1.3f, 2f, 1.6f)));
 		put(unitsTypes.get(2), new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
+	}};
+
+	private static final HashMap<String, HashMap<String, Float>> unitTypesPenaltie = new HashMap<>() {{
+		put(unitsTypes.getFirst(), new HashMap<>(){{
+			put(BattleMap.getDefaultFields().getFirst(), 1f);
+			put(BattleMap.getDefaultFields().get(1), 1.5f);
+			put(BattleMap.getDefaultFields().get(2), 2f);
+			put(BattleMap.getDefaultFields().get(3), 1.2f);
+		}});
+		put(unitsTypes.get(1), new HashMap<>(){{
+			put(BattleMap.getDefaultFields().getFirst(), 1f);
+			put(BattleMap.getDefaultFields().get(1), 1.8f);
+			put(BattleMap.getDefaultFields().get(2), 2.2f);
+			put(BattleMap.getDefaultFields().get(3), 1f);
+		}});
+		put(unitsTypes.get(1), new HashMap<>(){{
+			put(BattleMap.getDefaultFields().getFirst(), 1f);
+			put(BattleMap.getDefaultFields().get(1), 2.2f);
+			put(BattleMap.getDefaultFields().get(2), 1.2f);
+			put(BattleMap.getDefaultFields().get(3), 1.5f);
+		}});
 	}};
 
 	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenalties, battleMap.getMapBasicFields(), difficulty);
+				unitsSpecsMap, unitTypesPenaltie, battleMap.getMapBasicFields(), difficulty);
 		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
@@ -102,8 +123,7 @@ public class GameBattle {
 				order++;
 				unitMapImage = colorByType(unitPurchasedType) + order + ANSI_RESET;
 				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName),
-						unitTypesPenalties.get(unitPurchasedType),
-						battleMap.getMapBasicFields()));
+						unitTypesPenaltie.get(unitPurchasedType)));
 			}
 		}
 		placeUnitsIntoMap(gamerUnitsArray, 0);
@@ -471,7 +491,7 @@ public class GameBattle {
 		return unitsTyping;
 	}
 
-	public ArrayList<String> getUnitsTypes() {
+	public static ArrayList<String> getUnitsTypes() {
 		return unitsTypes;
 	}
 

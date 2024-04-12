@@ -15,7 +15,7 @@ public class Bot {
 	private final ArrayList<String> doubleAttackersIndexList;
 
 	public Bot(ArrayList<Unit> botUnitsArray, HashMap<String, ArrayList<String>> unitsTyping,
-			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, HashMap<String, ArrayList<Float>> unitTypesPenalties,
+			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, HashMap<String, HashMap<String, Float>> unitTypesPenalties,
 			   ArrayList<String> mapBasicFields, int difficulty) {
 		botDifficulty = difficulty;
 		int randomType, choiceUnit, unitNameCounter;
@@ -51,8 +51,7 @@ public class Bot {
 			botUnitsArray.add(new Unit(GameBattle.ANSI_YELLOW + (i + 1) + GameBattle.ANSI_RESET,
 					GameBattle.ANSI_YELLOW + botUnitsNames.get(i) + GameBattle.ANSI_RESET,
 					unitsSpecsMap.get(unitSpecName),
-					unitTypesPenalties.get(type),
-					mapBasicFields
+					unitTypesPenalties.get(type)
 			));
 		}
 		if (botDifficulty == 5) {
@@ -152,7 +151,7 @@ public class Bot {
 		int yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 		int attempts = 0;
 		while (!actingUnit.canMove(xCoordMove, yCoordMove, battleMap) ||
-				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getDefaultFields().getFirst())) {
+				!Objects.equals(battleMap.getFieldByPosition(xCoordMove, yCoordMove), battleMap.getMapBasicFields().getFirst())) {
 			xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 			while (xCoordMove < 0 || xCoordMove > 14) {

@@ -24,8 +24,7 @@ public class Unit {
 
 	protected HashMap<String, Float> penalty;
 
-	public Unit(String image, String unitName, ArrayList<Integer> unitParams, ArrayList<Float> unitTypePenalties,
-				ArrayList<String> mapBasicFields) {
+	public Unit(String image, String unitName, ArrayList<Integer> unitParams, HashMap<String, Float> unitTypePenalties) {
 		mapImage = image;
 		name = unitName;
 		healthPoints = unitParams.getFirst();
@@ -35,10 +34,7 @@ public class Unit {
 		movePoints = unitParams.get(4);
 		costPoints = unitParams.get(5);
 		penalty = new HashMap<>();
-		penalty.put(mapBasicFields.getFirst(), unitTypePenalties.getFirst());
-		penalty.put(mapBasicFields.get(1), unitTypePenalties.get(1));
-		penalty.put(mapBasicFields.get(2), unitTypePenalties.get(2));
-		penalty.put(mapBasicFields.get(3), unitTypePenalties.get(3));
+		penalty.putAll(unitTypePenalties);
 	}
 
 	public String getMapImage() {
