@@ -22,7 +22,7 @@ public class Bot {
 		String unitName, unitSpecName;
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3 + difficulty; i++) {
 			unitNameCounter = 1;
 			choiceType = random.nextInt(unitsTyping.size());
 			choiceUnit = random.nextInt(unitsTyping.get(choiceType).size());
@@ -136,7 +136,7 @@ public class Bot {
 		Unit actingUnit = botUnitsArray.get(actingBotUnitIndex);
 		if (actingUnit instanceof Chernomor) {
 			float acting = random.nextFloat();
-			if (acting > 0f) {
+			if (acting >= 0.4f) {
 				ArrayList<ArrayList<Integer>> coordsList = ((Chernomor) actingUnit).createPortal(battleMap, existingPortals);
 				returnInteger = coordsList.get(1).get(1) * (int)Math.pow(16, 5) +
 						coordsList.get(1).get(0) * (int)Math.pow(16, 4) +
