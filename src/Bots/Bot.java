@@ -136,7 +136,7 @@ public class Bot {
 		Unit actingUnit = botUnitsArray.get(actingBotUnitIndex);
 		if (actingUnit instanceof Chernomor) {
 			float acting = random.nextFloat();
-			if (acting >= 0.5f) {
+			if (acting > 0f) {
 				ArrayList<ArrayList<Integer>> coordsList = ((Chernomor) actingUnit).createPortal(battleMap, existingPortals);
 				returnInteger = coordsList.get(1).get(1) * (int)Math.pow(16, 5) +
 						coordsList.get(1).get(0) * (int)Math.pow(16, 4) +
