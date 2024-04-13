@@ -43,7 +43,7 @@ public class GameBattleInterface {
 		return Integer.parseInt(checkAnswer(gamer, answ, checkList));
 	}
 
-	public void setGame(GameBattle gameBattle) {
+	public void setGameBattle(GameBattle gameBattle) {
 		this.gameBattle = gameBattle;
 	}
 
@@ -63,7 +63,7 @@ public class GameBattleInterface {
 				""");
 	}
 
-	public void fillGamerUnitsArray() throws InterruptedException {
+	public void fillGamerUnitsArray() {
 		ArrayList<String> purchaseStringList;
 		int sum = 0, purchaseUnitCount, unitsCount = 0;
 		boolean answ;
@@ -200,7 +200,7 @@ public class GameBattleInterface {
 		HashMap<String, HashMap<String, Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
 		HashMap<String, ArrayList<String>> unitsTyping = gameBattle.getUnitsTyping();
 		HashMap<String, ArrayList<Integer>> unitsSpecsMap = gameBattle.getUnitsSpecsMap();
-		ArrayList<String> unitsTypes = gameBattle.getUnitsTypes();
+		ArrayList<String> unitsTypes = GameBattle.getUnitsTypes();
 		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";

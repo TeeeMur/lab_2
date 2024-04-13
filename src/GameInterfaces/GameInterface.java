@@ -1,6 +1,7 @@
 package GameInterfaces;
 
 import GameSubjects.Game;
+import GameSubjects.GameBattle;
 import GameSubjects.GameManager;
 import Gamers.Gamer;
 
@@ -126,8 +127,9 @@ public class GameInterface {
 		}
 	}
 
-	public int choiceView() {
+	public void choiceView() {
 		String buildingUpgradeAbilityString = "";
+		int answer;
 		if (game.getBuildings().isEmpty()) {
 			System.out.println("У тебя, к сожалению, пока что деревни нет((");
 		}
@@ -138,7 +140,22 @@ public class GameInterface {
 		}
 		System.out.print("Что ты хочешь сделать? Сыграть бой - введи 1, купить новое" + buildingUpgradeAbilityString +
 				" - 2, выйти - 3:");
-		int answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
-		return 0;
+		answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
+		if (answer == 1) {
+			GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
+			System.out.print("Хочешь сыграть в игру по умолчанию - введи 1, со своими полями/юнитами - 2?");
+			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
+			if (answer == 1) {
+				int diff = gameBattleInterface.newGameBattle();
+				GameBattle gameBattle = new GameBattle(diff);
+				gameBattleInterface.setGameBattle(gameBattle);
+			}
+			else {
+
+			}
+			gameBattleInterface.fillGamerUnitsArray();
+			gameBattleInterface.gaming();
+		}
+
 	}
 }

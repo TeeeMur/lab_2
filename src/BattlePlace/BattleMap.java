@@ -12,7 +12,7 @@ public class BattleMap implements Serializable {
 	private static final int minSizeX = 6;
 	private static final int minSizeY = 6;
 
-	private int maxUnitsOnLine;
+	private final int maxUnitsOnLine;
 	private final String[][] battleMapMatrix;
 	private static final ArrayList<String> defaultFields = new ArrayList<>(Arrays.asList("▓", "#", "@", "!"));
 	private ArrayList<String> mapBasicFields = defaultFields;
