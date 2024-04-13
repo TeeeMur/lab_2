@@ -81,7 +81,8 @@ public class GameBattle {
 		}});
 	}};
 
-	public GameBattle(int difficulty) {
+	public GameBattle(int difficulty, int attackPercentUpper, int healthPercentUpper, int defensePercentUpper,
+					  int penaltyDecrease, int movePercentUpper, Unit... units) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
