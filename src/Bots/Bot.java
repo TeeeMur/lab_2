@@ -55,7 +55,7 @@ public class Bot {
 			));
 		}
 		if (botDifficulty == 5) {
-			botUnitsArray.add(new Chernomor(mapBasicFields));
+			botUnitsArray.add(new Chernomor(((Integer)(botUnitsArray.size() + 1)).toString(), mapBasicFields));
 		}
 		doubleAttackersIndexList = new ArrayList<>();
 		for (int i = 0; i < difficulty - 2; i++) {
