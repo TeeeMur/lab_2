@@ -57,7 +57,7 @@ public class GameBattleEditorGUI {
 		HashMap<String, HashMap<String, Float>> inputUnitTypePenaltyMap;
 		if (answer == 2) {
 			inputUnitTypePenaltyMap = new HashMap<>();
-			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть больше 5 или меньше 2:");
+			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть больше 5 или меньше 3:");
 			ArrayList<String> obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
 			while (obstacles.size() < 2) {
 				System.out.println("Ты ввел только одно препятствие!");

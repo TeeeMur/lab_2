@@ -16,14 +16,14 @@ public class Bot {
 
 	public Bot(ArrayList<Unit> botUnitsArray, HashMap<String, ArrayList<String>> unitsTyping,
 			   HashMap<String, ArrayList<Integer>> unitsSpecsMap, HashMap<String, HashMap<String, Float>> unitTypesPenalties,
-			   ArrayList<String> mapBasicFields, int difficulty) {
+			   GameBattle gameBattle, int difficulty) {
 		botDifficulty = difficulty;
 		int randomType, choiceUnit, unitNameCounter;
 		String unitName, unitSpecName;
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
 		ArrayList<String> choiceTypes = new ArrayList<>(unitsTyping.keySet());
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 2 + difficulty + gameBattle.getBattleMap().getSizeX() / 8; i++) {
 			unitNameCounter = 1;
 			randomType = random.nextInt(choiceTypes.size());
 			choiceUnit = random.nextInt(unitsTyping.get(choiceTypes.get(randomType)).size());
@@ -55,7 +55,9 @@ public class Bot {
 			));
 		}
 		if (botDifficulty == 5) {
-			botUnitsArray.add(new Chernomor(mapBasicFields));
+			for (int i = botUnitsArray.size(); i < botUnitsArray.size() + 1; i++) {
+				botUnitsArray.add(new Chernomor(((Integer)i).toString(), gameBattle.getUnitTypesPenalties().get(gameBattle.getUnitsTypes().getFirst())));
+			}
 		}
 		doubleAttackersIndexList = new ArrayList<>();
 		for (int i = 0; i < difficulty - 2; i++) {

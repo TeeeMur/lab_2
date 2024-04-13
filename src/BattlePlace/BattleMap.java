@@ -11,6 +11,8 @@ public class BattleMap implements Serializable {
 	private static final int maxSizeY = 20;
 	private static final int minSizeX = 6;
 	private static final int minSizeY = 6;
+
+	private int maxUnitsOnLine;
 	private final String[][] battleMapMatrix;
 	private static final ArrayList<String> defaultFields = new ArrayList<>(Arrays.asList("▓", "#", "@", "!"));
 	private ArrayList<String> mapBasicFields = defaultFields;
@@ -18,6 +20,7 @@ public class BattleMap implements Serializable {
 	public BattleMap(int mapSizeX, int mapSizeY, int difficulty) {
 		sizeX = mapSizeX;
 		sizeY = mapSizeY;
+		maxUnitsOnLine = sizeX - 2;
 		battleMapMatrix = new String[mapSizeY][mapSizeX];
 		ArrayList<String> fieldsToChoose = new ArrayList<>(defaultFields);
 		for (int i = difficulty; i < 6 + sizeX + sizeY - 28; i++) {
@@ -38,6 +41,7 @@ public class BattleMap implements Serializable {
 
 	public BattleMap(String[][] inputBattleMapMatrix, ArrayList<String> basicFields) {
 		mapBasicFields = new ArrayList<>(basicFields);
+		maxUnitsOnLine = sizeX - 2;
 		sizeX = inputBattleMapMatrix[0].length;
 		sizeY = inputBattleMapMatrix.length;
 		battleMapMatrix = new String[sizeY][sizeX];
@@ -76,4 +80,8 @@ public class BattleMap implements Serializable {
 	public static int getMaxSizeY() {return maxSizeY;}
 	public static int getMinSizeX() {return minSizeX;}
 	public static int getMinSizeY() {return minSizeY;}
+
+	public int getMaxUnitsOnLine() {
+		return maxUnitsOnLine;
+	}
 }

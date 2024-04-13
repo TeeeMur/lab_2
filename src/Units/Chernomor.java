@@ -10,9 +10,9 @@ public class Chernomor extends Unit{
 
 	Random random = new Random();
 
-	public Chernomor(ArrayList<String> mapBasicFields) {
-		super(GameBattle.ANSI_YELLOW + "9" + GameBattle.ANSI_RESET, GameBattle.ANSI_YELLOW + "Черномор" + GameBattle.ANSI_RESET, new ArrayList<>(Arrays.asList(45, 5, 3, 3, 4, 10)),
-				new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)), mapBasicFields);
+	public Chernomor(String num, HashMap<String, Float> chernomorPenatlies) {
+		super(GameBattle.ANSI_YELLOW + num + GameBattle.ANSI_RESET, GameBattle.ANSI_YELLOW + "Черномор" + GameBattle.ANSI_RESET, new ArrayList<>(Arrays.asList(45, 5, 3, 3, 4, 10)),
+				chernomorPenatlies);
 	}
 
 	private boolean portalCreateCondition(ArrayList<ArrayList<Integer>> existingPortals, BattleMap battleMap, int xStartCoord, int yStartCoord, int xEndCoord, int yEndCoord) {
@@ -25,8 +25,8 @@ public class Chernomor extends Unit{
 				return false;
 			}
 		}
-		return Objects.equals(battleMap.getFieldByPosition(xStartCoord, yStartCoord), battleMap.getDefaultFields().getFirst()) &&
-				Objects.equals(battleMap.getFieldByPosition(xEndCoord, yEndCoord), battleMap.getDefaultFields().getFirst()) &&
+		return Objects.equals(battleMap.getFieldByPosition(xStartCoord, yStartCoord), battleMap.getMapBasicFields().getFirst()) &&
+				Objects.equals(battleMap.getFieldByPosition(xEndCoord, yEndCoord), battleMap.getMapBasicFields().getFirst()) &&
 				(Math.sqrt(Math.pow((xEndCoord - xStartCoord), 2) + Math.pow((yEndCoord - yStartCoord), 2)) >= 2);
 	}
 

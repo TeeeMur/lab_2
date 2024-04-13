@@ -60,13 +60,7 @@ public class GameBattle {
 		put(unitsTyping.get(unitsTypes.get(2)).get(2), new ArrayList<>(Arrays.asList(25, 3, 3, 2, 5, 25)));
 	}};
 
-	private final HashMap<String, ArrayList<Float>> unitTypesPenalties = new HashMap<>() {{
-		put(unitsTypes.getFirst(), new ArrayList<>(Arrays.asList(1f, 1.5f, 2f, 1.2f)));
-		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList(1f, 1.3f, 2f, 1.6f)));
-		put(unitsTypes.get(2), new ArrayList<>(Arrays.asList(1f, 2.2f, 1.2f, 1.5f)));
-	}};
-
-	private static final HashMap<String, HashMap<String, Float>> unitTypesPenaltie = new HashMap<>() {{
+	private final HashMap<String, HashMap<String, Float>> unitTypesPenalties = new HashMap<>() {{
 		put(unitsTypes.getFirst(), new HashMap<>(){{
 			put(BattleMap.getDefaultFields().getFirst(), 1f);
 			put(BattleMap.getDefaultFields().get(1), 1.5f);
@@ -89,9 +83,9 @@ public class GameBattle {
 
 	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
-		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenaltie, battleMap.getMapBasicFields(), difficulty);
 		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
+				unitsSpecsMap, unitTypesPenalties, this, difficulty);
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
 
@@ -123,7 +117,7 @@ public class GameBattle {
 				order++;
 				unitMapImage = colorByType(unitPurchasedType) + order + ANSI_RESET;
 				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName),
-						unitTypesPenaltie.get(unitPurchasedType)));
+						unitTypesPenalties.get(unitPurchasedType)));
 			}
 		}
 		placeUnitsIntoMap(gamerUnitsArray, 0);
@@ -259,7 +253,7 @@ public class GameBattle {
 		return battleMap;
 	}
 
-	public HashMap<String, ArrayList<Float>> getUnitTypesPenalties() {
+	public HashMap<String, HashMap<String, Float>> getUnitTypesPenalties() {
 		return unitTypesPenalties;
 	}
 

@@ -149,8 +149,8 @@ public class GameBattleInterface {
 					System.out.println("У тебя не хватает денег на такую покупку, выбирай еще раз!");
 					continue;
 				}
-				if (unitsCount + purchaseUnitCount > 9) {
-					System.out.println("Больше 9 юнитов купить нельзя!");
+				if (unitsCount + purchaseUnitCount > gameBattle.getBattleMap().getMaxUnitsOnLine()) {
+					System.out.println("Больше " + gameBattle.getBattleMap().getMaxUnitsOnLine() + " юнитов купить нельзя!");
 					continue;
 				}
 				unitsCount += purchaseUnitCount;
@@ -197,8 +197,7 @@ public class GameBattleInterface {
 	}
 
 	private void printGamerUnitsArrayChoice() {
-		BattleMap battleMap = gameBattle.getBattleMap();
-		HashMap<String, ArrayList<Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
+		HashMap<String, HashMap<String, Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
 		HashMap<String, ArrayList<String>> unitsTyping = gameBattle.getUnitsTyping();
 		HashMap<String, ArrayList<Integer>> unitsSpecsMap = gameBattle.getUnitsSpecsMap();
 		ArrayList<String> unitsTypes = gameBattle.getUnitsTypes();
@@ -206,11 +205,11 @@ public class GameBattleInterface {
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
 		String footColumnName = "|      |            " + ANSI_GREEN + unitsTypes.getFirst() + ANSI_RESET + "           |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.getFirst())) + "      |\n";
+				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.getFirst())) + "      |\n";
 		String archerColumnName = "|      |           " + ANSI_RED + unitsTypes.get(1) + ANSI_RESET + "          |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.get(1))) + "      |\n";
+				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(1))) + "      |\n";
 		String horseColumnName = "|      |           " + ANSI_BLUE + unitsTypes.get(2) + ANSI_RESET + "         |   " +
-				formattedTypeOfUnitsColumnName(battleMap.getMapBasicFields(), unitTypesPenalties.get(unitsTypes.get(2))) + "      |\n";
+				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(2))) + "      |\n";
 		String[] typeColumnNames = {footColumnName, archerColumnName, horseColumnName};
 		System.out.print(divider);
 		Object[] tempSpecs = new Object[8];
@@ -238,18 +237,13 @@ public class GameBattleInterface {
 				" |    %2d    |  %2d   |        %2d       |   %2d   |      %2d       |    %3d    |\n";
 	}
 
-	private String formattedTypeOfUnitsColumnName(ArrayList<String> fields, ArrayList<Float> penalties) {
-		return String.format(
-				"Штраф за 1 клетку:  %s: %.1f   %s: %.1f   %s: %.1f   %s: %.1f",
-				fields.getFirst(),
-				penalties.getFirst(),
-				fields.get(1),
-				penalties.get(1),
-				fields.get(2),
-				penalties.get(2),
-				fields.get(3),
-				penalties.get(3)
-		);
+	private String formattedTypeOfUnitsColumnName(HashMap<String, Float> unitPenalties) {
+		StringBuilder pattern = new StringBuilder("Штраф за 1 клетку:");
+		for (String field: unitPenalties.keySet()) {
+			pattern.append(String.format(" %s: %.1f", field, unitPenalties.get(field)));
+		}
+		pattern.append(" ".repeat(49 - pattern.length()));
+		return pattern.toString();
 	}
 
 	private ArrayList<String> getCurrentUnitsState(ArrayList<Unit> unitsList) {

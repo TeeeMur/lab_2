@@ -10,17 +10,17 @@ public class Game {
 
 	private final HashMap<String, Integer> resources;
 	private final ArrayList<String> buildingsNames = new ArrayList<>() {{
-		add("Дом лекаря");
+		add("Лекарь");
 		add("Таверна");
 		add("Кузница");
 		add("Арсенал");
 		add("Академия");
 		add("Рынок");
-		add("Ремесленная мастерская");
+		add("Казармы");
 	}};
 	private final HashMap<String, Integer> buildings;
 
-	Game() {
+	public Game() {
 		buildings = new HashMap<>();
 		resources = new HashMap<>() {{
 			put(GOLD, 0);
@@ -43,8 +43,12 @@ public class Game {
 		return 0;
 	}
 
-	HashMap<String, Integer> getBuildings() {
+	public HashMap<String, Integer> getBuildings() {
 		return buildings;
+	}
+
+	public ArrayList<String> getBuildingsNames() {
+		return buildingsNames;
 	}
 
 	public void addElixir(int count) {
