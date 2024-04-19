@@ -27,6 +27,7 @@ public class GameManager<T> {
 			return null;
 		}
 	}
+
 	public boolean deleteGameBattleByName(String absolutePath){
 		File mapFile = new File(absolutePath);
 		if (mapFile.exists() && mapFile.isFile()) {

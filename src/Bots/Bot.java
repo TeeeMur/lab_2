@@ -56,7 +56,7 @@ public class Bot {
 		}
 		if (botDifficulty == 5) {
 			for (int i = botUnitsArray.size(); i < botUnitsArray.size() + 1; i++) {
-				botUnitsArray.add(new Chernomor(((Integer)i).toString(), gameBattle.getUnitTypesPenalties().get(gameBattle.getUnitsTypes().getFirst())));
+				botUnitsArray.add(new Chernomor(((Integer)i).toString(), gameBattle.getUnitTypesPenalties().get(GameBattle.getUnitsTypes().getFirst())));
 			}
 		}
 		doubleAttackersIndexList = new ArrayList<>();

@@ -1,8 +1,11 @@
 package BattlePlace;
 
+import GameSubjects.GameBattle;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class BattleMap implements Serializable {
 	int sizeX, sizeY;
@@ -14,15 +17,36 @@ public class BattleMap implements Serializable {
 
 	private final int maxUnitsOnLine;
 	private final String[][] battleMapMatrix;
-	private static final ArrayList<String> defaultFields = new ArrayList<>(Arrays.asList("▓", "#", "@", "!"));
-	private ArrayList<String> mapBasicFields = defaultFields;
+	private static final ArrayList<String> DEFAULT_FIELDS = new ArrayList<>(Arrays.asList("▓", "#", "@", "!"));
+	private ArrayList<String> mapBasicFields = DEFAULT_FIELDS;
+	private HashMap<String, HashMap<String, Float>> penalties;
+	private static final HashMap<String, HashMap<String, Float>> DEFAULT_PENALTIES = new HashMap<>(){{
+		put(GameBattle.getUnitsTypes().getFirst(), new HashMap<>(){{
+			put(DEFAULT_FIELDS.getFirst(), 1f);
+			put(DEFAULT_FIELDS.get(1), 1.5f);
+			put(DEFAULT_FIELDS.get(2), 2f);
+			put(DEFAULT_FIELDS.get(3), 1.2f);
+		}});
+		put(GameBattle.getUnitsTypes().get(1), new HashMap<>(){{
+			put(DEFAULT_FIELDS.getFirst(), 1f);
+			put(DEFAULT_FIELDS.get(1), 1.8f);
+			put(DEFAULT_FIELDS.get(2), 2.2f);
+			put(DEFAULT_FIELDS.get(3), 1f);
+		}});
+		put(GameBattle.getUnitsTypes().get(1), new HashMap<>(){{
+			put(DEFAULT_FIELDS.getFirst(), 1f);
+			put(DEFAULT_FIELDS.get(1), 2.2f);
+			put(DEFAULT_FIELDS.get(2), 1.2f);
+			put(DEFAULT_FIELDS.get(3), 1.5f);
+		}});
+	}};
 
 	public BattleMap(int mapSizeX, int mapSizeY, int difficulty) {
 		sizeX = mapSizeX;
 		sizeY = mapSizeY;
 		maxUnitsOnLine = sizeX - 2;
 		battleMapMatrix = new String[mapSizeY][mapSizeX];
-		ArrayList<String> fieldsToChoose = new ArrayList<>(defaultFields);
+		ArrayList<String> fieldsToChoose = new ArrayList<>(DEFAULT_FIELDS);
 		for (int i = difficulty; i < 6 + sizeX + sizeY - 28; i++) {
 			fieldsToChoose.add(mapBasicFields.getFirst());
 		}
@@ -39,8 +63,9 @@ public class BattleMap implements Serializable {
 		}
 	}
 
-	public BattleMap(String[][] inputBattleMapMatrix, ArrayList<String> basicFields) {
+	public BattleMap(String[][] inputBattleMapMatrix, ArrayList<String> basicFields, HashMap<String, HashMap<String, Float>> penalties) {
 		mapBasicFields = new ArrayList<>(basicFields);
+		this.penalties = penalties;
 		maxUnitsOnLine = sizeX - 2;
 		sizeX = inputBattleMapMatrix[0].length;
 		sizeY = inputBattleMapMatrix.length;
@@ -65,7 +90,7 @@ public class BattleMap implements Serializable {
 	}
 
 	public static ArrayList<String> getDefaultFields() {
-		return defaultFields;
+		return DEFAULT_FIELDS;
 	}
 
 	public ArrayList<String> getMapBasicFields() {
@@ -83,5 +108,9 @@ public class BattleMap implements Serializable {
 
 	public int getMaxUnitsOnLine() {
 		return maxUnitsOnLine;
+	}
+
+	public HashMap<String, HashMap<String, Float>> getPenalties() {
+		return penalties;
 	}
 }

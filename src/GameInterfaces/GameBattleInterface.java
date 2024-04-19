@@ -204,18 +204,14 @@ public class GameBattleInterface {
 		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
-		String footColumnName = "|      |            " + ANSI_GREEN + unitsTypes.getFirst() + ANSI_RESET + "           |   " +
-				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.getFirst())) + "      |\n";
-		String archerColumnName = "|      |           " + ANSI_RED + unitsTypes.get(1) + ANSI_RESET + "          |   " +
-				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(1))) + "      |\n";
-		String horseColumnName = "|      |           " + ANSI_BLUE + unitsTypes.get(2) + ANSI_RESET + "         |   " +
-				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(2))) + "      |\n";
-		String[] typeColumnNames = {footColumnName, archerColumnName, horseColumnName};
 		System.out.print(divider);
 		Object[] tempSpecs = new Object[8];
 		int iter = 1;
 		for (int i = 0; i < unitsTypes.size(); i++) {
-			System.out.print(typeColumnNames[i]);
+			String typeName = unitsTypes.get(i) + " ".repeat(unitsTypes.stream().mapToInt(String::length).max().orElse(8));
+			String typeColumnName = "|      |           " + ANSI_BLUE + typeName + ANSI_RESET + "         |   " +
+				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(i))) + "      |\n";
+			System.out.print(typeColumnName);
 			System.out.print(divider);
 			System.out.print(columnNames);
 			System.out.print(divider);

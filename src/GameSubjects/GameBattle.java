@@ -60,31 +60,41 @@ public class GameBattle {
 		put(unitsTyping.get(unitsTypes.get(2)).get(2), new ArrayList<>(Arrays.asList(25, 3, 3, 2, 5, 25)));
 	}};
 
-	private final HashMap<String, HashMap<String, Float>> unitTypesPenalties = new HashMap<>() {{
-		put(unitsTypes.getFirst(), new HashMap<>(){{
-			put(BattleMap.getDefaultFields().getFirst(), 1f);
-			put(BattleMap.getDefaultFields().get(1), 1.5f);
-			put(BattleMap.getDefaultFields().get(2), 2f);
-			put(BattleMap.getDefaultFields().get(3), 1.2f);
-		}});
-		put(unitsTypes.get(1), new HashMap<>(){{
-			put(BattleMap.getDefaultFields().getFirst(), 1f);
-			put(BattleMap.getDefaultFields().get(1), 1.8f);
-			put(BattleMap.getDefaultFields().get(2), 2.2f);
-			put(BattleMap.getDefaultFields().get(3), 1f);
-		}});
-		put(unitsTypes.get(1), new HashMap<>(){{
-			put(BattleMap.getDefaultFields().getFirst(), 1f);
-			put(BattleMap.getDefaultFields().get(1), 2.2f);
-			put(BattleMap.getDefaultFields().get(2), 1.2f);
-			put(BattleMap.getDefaultFields().get(3), 1.5f);
-		}});
-	}};
+	private final HashMap<String, HashMap<String, Float>> unitTypesPenalties;
 
-	public GameBattle(int difficulty, int attackPercentUpper, int healthPercentUpper, int defensePercentUpper,
-					  int penaltyDecrease, int movePercentUpper, Unit... units) {
+	public GameBattle(int difficulty, int healthPercentUpper, int attackPercentUpper, int defensePercentUpper,
+					  int penaltyDecrease, int movePercentUpper,
+					  BattleMap battleMap, HashMap<String, HashMap<String, ArrayList<Integer>>> addUnitsMap) {
+		this.battleMap = battleMap;
+		float penaltyDowner = 1f - (float)penaltyDecrease / 100f;
+		unitTypesPenalties = this.battleMap.getPenalties();
+		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
+				unitsSpecsMap, unitTypesPenalties, this, difficulty);
+		for (String unitType : unitTypesPenalties.keySet()) {
+			for (String field : unitTypesPenalties.get(unitType).keySet()) {
+				unitTypesPenalties.get(unitType).compute(field, (k, p) -> p * penaltyDowner);
+			}
+		}
+		for (String unitType: addUnitsMap.keySet()) {
+			for (String name: addUnitsMap.get(unitType).keySet()) {
+				unitsSpecsMap.put(name, addUnitsMap.get(unitType).get(name));
+				unitsTyping.get(unitType).add(name);
+			}
+		}
+		for (String unitName: unitsSpecsMap.keySet()) {
+			unitsSpecsMap.get(unitName).set(0, (int)(unitsSpecsMap.get(unitName).getFirst() * (1f + (float)healthPercentUpper / 100f)));
+			unitsSpecsMap.get(unitName).set(1, (int)(unitsSpecsMap.get(unitName).get(1) * (1f + (float)attackPercentUpper / 100f)));
+			unitsSpecsMap.get(unitName).set(3, (int)(unitsSpecsMap.get(unitName).get(3) * (1f + (float)defensePercentUpper / 100f)));
+			unitsSpecsMap.get(unitName).set(4, (int)(unitsSpecsMap.get(unitName).get(4) * ((float)movePercentUpper / 100f)));
+		}
+		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
+	}
+
+	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		unitTypesPenalties = battleMap.getPenalties();
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
 				unitsSpecsMap, unitTypesPenalties, this, difficulty);
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);

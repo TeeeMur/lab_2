@@ -1,5 +1,10 @@
 package GameInterfaces;
 
+import BattlePlace.BattleMap;
+import Buildings.Academy;
+import Buildings.Buildable;
+import Buildings.Building;
+import Buildings.Tavern;
 import GameSubjects.Game;
 import GameSubjects.GameBattle;
 import GameSubjects.GameManager;
@@ -14,8 +19,8 @@ import static GameInterfaces.InputChecker.checkAnswer;
 
 public class GameInterface {
 
-	private final String choiceToDownload = "Загрузиться";
-	private final String choiceNewGame = "Новая игра";
+	private final String CHOICE_DOWNLOAD = "Загрузиться";
+	private final String CHOICE_GAME = "Новая игра";
 	Gamer gamer;
 	Game game;
 
@@ -28,8 +33,8 @@ public class GameInterface {
 				"\nсоздать новую карту c новыми героями - введи 3, выйти из программы - 4:");
 		int choice = Integer.parseInt(checkAnswer(gamer, gamer.input().split(" ")[0], new ArrayList<>(Arrays.asList("1", "2", "3", "4"))));
 		return switch (choice) {
-			case (1) -> choiceToDownload;
-			case (2) ->	choiceNewGame;
+			case (1) -> CHOICE_DOWNLOAD;
+			case (2) ->	CHOICE_GAME;
 			case (3) -> "Новая карта";
 			default -> "Выйти";
 		};
@@ -38,7 +43,7 @@ public class GameInterface {
 	public int setGame(String choice) {
 		int attempts = 0;
 		switch (choice) {
-			case (choiceToDownload):
+			case (CHOICE_DOWNLOAD):
 				System.out.println("Введи путь к твоей игре:");
 				String gameLocation = gamer.input();
 				GameManager<Game> gameManager = new GameManager<>();
@@ -52,8 +57,8 @@ public class GameInterface {
 				}
 				this.game = inputGame;
 				return 0;
-			case(choiceNewGame):
-				this.game = new Game();
+			case(CHOICE_GAME):
+				this.game = new Game(10, 10);
 				System.out.println("Твоя новая игра создана!");
 				return 0;
 			default:
@@ -73,18 +78,23 @@ public class GameInterface {
 		while (houseName.length() < maxNameLength) {
 			houseName.append(" ");
 		}
+		String levelString = ((Integer)level).toString();
+		if (levelString.length() < 2) {
+			levelString = " " + levelString;
+		}
+		String finalLevelString = levelString;
 		return switch (level) {
-			case (2) -> new ArrayList<>() {{
+			case (1) -> new ArrayList<>() {{
 				add("      []_______     ");
 				add("     /\\" + houseName + "\\    ");
-				add(" ___/  \\__/\\____\\__ ");
+				add(" ___/" + finalLevelString + "\\__/\\____\\__ ");
 				add("/\\___\\ |'[]''[]'|__\\");
 				add("||'''| |''||''''|''|");
 				add("\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
 			}};
-			case (3) -> new ArrayList<>() {{
+			case (2) -> new ArrayList<>() {{
 				add("    ________________   ");
-				add("   /    " + houseName + "    \\  ");
+				add("   /    " + houseName + "  " + finalLevelString + "\\  ");
 				add("  /__________________\\ ");
 				add("   ||  || /--\\ ||  ||  ");
 				add("   ||[]|| | .| ||[]||  ");
@@ -93,7 +103,7 @@ public class GameInterface {
 			default -> new ArrayList<>() {{
 				add(" ///////////\\ ");
 				add("///////////  \\");
-				add("|" + houseName + "|  |");
+				add("|" + houseName + "|" + finalLevelString + "|");
 				add("|[] | | []|[]|");
 				add("|   | |   |  |");
 				add("\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
@@ -102,11 +112,10 @@ public class GameInterface {
 	}
 
 	private void printVillage() {
-		HashMap<String, Integer> buildings = game.getBuildings();
-		ArrayList<String> buildingsKeys = new ArrayList<>(buildings.keySet());
+		HashMap<String, Buildable> buildings = game.getBuildings();
 		ArrayList<ArrayList<String>> buildingImages = new ArrayList<>() {{
-			for (int i = 0; i < buildings.size(); i++) {
-				add(getBuildingImage(buildingsKeys.get(i), buildings.get(buildingsKeys.get(i))));
+			for (String buildingName : buildings.keySet()) {
+				add(getBuildingImage(buildingName, buildings.get(buildingName).getLevel()));
 			}
 		}};
 		int maxHeight;
@@ -130,32 +139,70 @@ public class GameInterface {
 	public void choiceView() {
 		String buildingUpgradeAbilityString = "";
 		int answer;
-		if (game.getBuildings().isEmpty()) {
-			System.out.println("У тебя, к сожалению, пока что деревни нет((");
-		}
-		else {
-			System.out.println("Вот твоя деревня:");
-			printVillage();
-			buildingUpgradeAbilityString = " или улучшить старое";
-		}
-		System.out.print("Что ты хочешь сделать? Сыграть бой - введи 1, купить новое" + buildingUpgradeAbilityString +
-				" - 2, выйти - 3:");
-		answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
-		if (answer == 1) {
-			GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
-			System.out.print("Хочешь сыграть в игру по умолчанию - введи 1, со своими полями/юнитами - 2?");
+		boolean toHome = false;
+		GameBattle gameBattle;
+		while (true) {
+			if (game.getBuildings().isEmpty()) {
+				System.out.println("У тебя, к сожалению, пока что деревни нет((");
+			} else {
+				System.out.println("Вот твоя деревня:");
+				printVillage();
+				buildingUpgradeAbilityString = " или улучшить старое";
+			}
+			System.out.print("Что ты хочешь сделать? Сыграть бой - введи 1, купить новое здание" + buildingUpgradeAbilityString +
+					" - 2, выйти - 3:");
 			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
 			if (answer == 1) {
+				GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
 				int diff = gameBattleInterface.newGameBattle();
-				GameBattle gameBattle = new GameBattle(diff);
+				System.out.print("Хочешь сыграть в игру по умолчанию - введи 1, со своими полями/юнитами - 2");
+				answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
+				if (answer == 1) {
+					gameBattle = new GameBattle(diff);
+				} else {
+					HashMap<String, String> mapPaths = game.getMapPaths();
+					System.out.println("Вот твои сохраненные на этом аккаунте карты(не факт, что они все еще существуют...):");
+					for (String pathName: mapPaths.keySet()) {
+						System.out.println(pathName + ": " + mapPaths.get(pathName));
+					}
+					System.out.println("Введи имя пути к твоей карте из списка выше (или можешь ввести новый путь):");
+					String mapPath = gamer.input();
+					if (mapPaths.containsKey(mapPath)) {
+						mapPath = mapPaths.get(mapPath);
+					}
+					GameManager<BattleMap> gameManager = new GameManager<>();
+					BattleMap battleMap = gameManager.getGameItemByFilename(gamer.input());
+					while (battleMap == null) {
+						System.out.print("""
+								Ты ввел неправильный путь!
+								Если хочешь вернуться к меню, введи "нет", иначе - введи путь к карте:""");
+						mapPath = gamer.input();
+						if (mapPaths.containsKey(mapPath)) {
+							mapPath = mapPaths.get(mapPath);
+						}
+						if (mapPath.equalsIgnoreCase("нет")) {
+							toHome = true;
+							break;
+						}
+						battleMap = gameManager.getGameItemByFilename(mapPath);
+					}
+					if (toHome) {
+						continue;
+					}
+					HashMap<String, Buildable> buildableHashMap = game.getBuildings();
+					gameBattle = new GameBattle(diff,
+							buildableHashMap.get(Building.HEALER.getName()).getBuildingUpper(),
+							buildableHashMap.get(Building.BLACKSMITH_HOUSE.getName()).getBuildingUpper(),
+							buildableHashMap.get(Building.ARSENAL.getName()).getBuildingUpper(),
+							buildableHashMap.get(Tavern.NAME).getBuildingUpper(Tavern.PENALTY_TYPE),
+							buildableHashMap.get(Tavern.NAME).getBuildingUpper(Tavern.PENALTY_TYPE),
+							battleMap,
+							game.getAcademyUnits());
+				}
 				gameBattleInterface.setGameBattle(gameBattle);
+				gameBattleInterface.fillGamerUnitsArray();
+				gameBattleInterface.gaming();
 			}
-			else {
-
-			}
-			gameBattleInterface.fillGamerUnitsArray();
-			gameBattleInterface.gaming();
 		}
-
 	}
 }

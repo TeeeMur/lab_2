@@ -1,61 +1,102 @@
 package GameSubjects;
 
+import Buildings.*;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 
-public class Game {
+public class Game implements Serializable {
 
-	private final String GOLD = "Золото";
-	private final String ELIXIR = "Эликсир";
-
+	HashMap<String, String> mapPaths;
 	private final HashMap<String, Integer> resources;
-	private final ArrayList<String> buildingsNames = new ArrayList<>() {{
-		add("Лекарь");
-		add("Таверна");
-		add("Кузница");
-		add("Арсенал");
-		add("Академия");
-		add("Рынок");
-		add("Казармы");
-	}};
-	private final HashMap<String, Integer> buildings;
+	public static final String GOLD = "Золото";
+	public static final String ELIXIR = "Эликсир";
+	public static final String BUILDING_UPPER_STRING = "upper";
+	public static final String BUILDING_COST_STRING = "cost";
 
-	public Game() {
-		buildings = new HashMap<>();
+	private final HashMap<String, Buildable> buildings = new HashMap<>() {{
+		put(Building.HEALER.getName(), Building.HEALER);
+		put(Building.BLACKSMITH_HOUSE.getName(), Building.BLACKSMITH_HOUSE);
+		put(Building.ARSENAL.getName(), Building.ARSENAL);
+		put(Academy.NAME, new Academy());
+		put(Hotel.NAME, new Hotel());
+		put(Market.NAME, new Market());
+		put(Tavern.NAME, new Tavern());
+	}};
+
+	private final HashMap<String, HashMap<String, ArrayList<Integer>>> academyUnits;
+
+	public Game(int firstGold, int firstElixir) {
 		resources = new HashMap<>() {{
-			put(GOLD, 0);
-			put(ELIXIR, 0);
+			put(GOLD, firstGold);
+			put(ELIXIR, firstElixir);
+		}};
+		mapPaths = new HashMap<>();
+		academyUnits = new HashMap<>() {{
+			for (String type : GameBattle.getUnitsTypes()) {
+				put(type, new HashMap<>());
+			}
 		}};
 	}
 
-	public int createNewBuilding(String buildingName) {
-		if (!buildingsNames.contains(buildingName) || buildings.containsKey(buildingName)) {
-			return 1;
+	public void addUnit(String type, String name, ArrayList<Integer> specs) {
+		if (academyUnits.size() == 3 || specs.size() != 6 || !academyUnits.containsKey(type)) {
+			return;
 		}
-		buildings.put(buildingName, 1);
-		return 0;
-	}
-	public int upgradeBuilding(String buildingName) {
-		if (!buildingsNames.contains(buildingName) || buildings.containsKey(buildingName)) {
-			return 1;
-		}
-		buildings.put(buildingName, 1);
-		return 0;
+		academyUnits.get(type).put(name, specs);
 	}
 
-	public HashMap<String, Integer> getBuildings() {
+	public void deleteUnit(String type, String name, ArrayList<Integer> specs) {
+		if (academyUnits.size() == 3 || specs.size() != 6 || !academyUnits.containsKey(type)
+		|| !academyUnits.get(type).containsKey(name)) {
+			return;
+		}
+		academyUnits.get(type).remove(name);
+	}
+
+	public HashMap<String, HashMap<String, ArrayList<Integer>>> getAcademyUnits() {
+		return academyUnits;
+	}
+
+	public void createNewGameBuildingUpper(String buildingName) {
+		if (buildings.get(buildingName).getLevel() != 0) {
+			return;
+		}
+		buildings.get(buildingName).upgradeBuilding();
+	}
+
+	public void upgradeGameBuilding(String buildingName) {
+		buildings.get(buildingName).upgradeBuilding();
+	}
+
+	public void addMapPath(String name, String mapPath) {
+		mapPaths.put(name, mapPath);
+	}
+
+	public void removeMapPath(String name) {
+		mapPaths.remove(name);
+	}
+
+	public HashMap<String, String> getMapPaths() {
+		return mapPaths;
+	}
+
+	public HashMap<String, Buildable> getBuildings() {
 		return buildings;
 	}
 
-	public ArrayList<String> getBuildingsNames() {
-		return buildingsNames;
+	public Set<String> getBuildingsNames() {
+		return buildings.keySet();
 	}
 
 	public void addElixir(int count) {
 		if (count < 0) {
 			return;
 		}
-		int pre = resources.get(ELIXIR);
+		int pre = resources.getOrDefault(ELIXIR, 0);
 		resources.put(ELIXIR, pre + count);
 	}
 
@@ -63,26 +104,24 @@ public class Game {
 		if (count < 0) {
 			return;
 		}
-		int pre = resources.get(GOLD);
+		int pre = resources.getOrDefault(GOLD, 0);
 		resources.put(GOLD, pre + count);
 	}
 
-	public int spendElixir(int count) {
+	public void spendElixir(int count) {
 		int pre = resources.get(ELIXIR);
 		if (count > 0 | pre < count) {
-			return 1;
+			return;
 		}
 		resources.put(ELIXIR, pre - count);
-		return 0;
 	}
 
-	public int spendGold(int count) {
+	public void spendGold(int count) {
 		int pre = resources.get(GOLD);
 		if (count > 0 | pre < count) {
-			return 1;
+			return;
 		}
 		resources.put(GOLD, pre - count);
-		return 0;
 	}
 
 	public int getElixir() {
@@ -92,4 +131,5 @@ public class Game {
 	public int getGold() {
 		return resources.get(GOLD);
 	}
+
 }
