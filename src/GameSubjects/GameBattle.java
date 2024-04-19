@@ -73,7 +73,8 @@ public class GameBattle {
 				unitsSpecsMap, unitTypesPenalties, this, difficulty);
 		for (String unitType : unitTypesPenalties.keySet()) {
 			for (String field : unitTypesPenalties.get(unitType).keySet()) {
-				unitTypesPenalties.get(unitType).compute(field, (k, p) -> p * penaltyDowner);
+				float prePenalty = unitTypesPenalties.get(unitType).getOrDefault(field, 1.1f);
+				unitTypesPenalties.get(unitType).put(field, prePenalty * penaltyDowner);
 			}
 		}
 		for (String unitType: addUnitsMap.keySet()) {
@@ -300,11 +301,14 @@ public class GameBattle {
 	}
 
 	// side: false - gamer attacks bot, true - bot attacks gamer
-	public void makeAttack(boolean side, String attackHeroImage, String attackableHeroImage) {
+	// return: true - kill, false - other
+	public boolean makeAttack(boolean side, String attackHeroImage, String attackableHeroImage) {
+		boolean kill = false;
 		Unit attackableUnit = getUnitByMapImage(removeAscii(attackableHeroImage), !side);
 		Unit attackUnit = getUnitByMapImage(removeAscii(attackHeroImage), side);
 		attackableUnit.getDamage(attackUnit.getAttackPoints());
 		if (attackableUnit.checkDeath()) {
+			kill = true;
 			if (!side && Objects.equals(removeAscii(attackableUnit.getName()), "Черномор")) {
 				int xPortalCoord;
 				int yPortalCoord;
@@ -325,7 +329,7 @@ public class GameBattle {
 					attackableUnit.getyCoord());
 			secondGamerUnitsArray.remove(attackableUnit);
 		}
-
+		return kill;
 	}
 
 	// number:  2AB945

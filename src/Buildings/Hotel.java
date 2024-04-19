@@ -3,7 +3,6 @@ package Buildings;
 import GameSubjects.Game;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Hotel implements Buildable{
@@ -12,10 +11,7 @@ public class Hotel implements Buildable{
 	private final int maxLevel;
 	private final String costType;
 
-	private final ArrayList<HashMap<String, Integer>> upgrades;
-
-	public Hotel() {
-		upgrades = new ArrayList<>() {{
+	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>() {{
 			add(new HashMap<>() {{
 				put(Game.BUILDING_UPPER_STRING, 0);
 				put(Game.BUILDING_COST_STRING, 0);
@@ -45,6 +41,8 @@ public class Hotel implements Buildable{
 				put(Game.BUILDING_COST_STRING, 15);
 			}});
 		}};
+
+	public Hotel() {
 		this.level = 0;
 		this.maxLevel = upgrades.size();
 		this.costType = Game.GOLD;
@@ -80,7 +78,7 @@ public class Hotel implements Buildable{
 	@Override
 	@Deprecated
 	public int getBuildingUpper(String type) {
-		return 0;
+		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override

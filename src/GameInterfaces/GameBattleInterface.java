@@ -1,6 +1,6 @@
 package GameInterfaces;
 
-import BattlePlace.BattleMap;
+import GameSubjects.Game;
 import GameSubjects.GameBattle;
 import Gamers.Gamer;
 import Units.Unit;
@@ -436,9 +436,11 @@ public class GameBattleInterface {
 		return str;
 	}
 
-	public void gaming(){
+	public HashMap<String, Integer> gaming(){
+		HashMap<String, Integer> result = new HashMap<>();
+		boolean kill;
 		int xMoveCoord, yMoveCoord, checkRes,
-				inputActionNum;
+				inputActionNum, kills = 0, heroCount = gameBattle.getGamerUnitsArray().size();
 		String inputHero, inputAction, inputAnswer, secondGamerActionString;
 		ArrayList<String> heroCheckList, attackableUnitsIndexList, inputCoords;
 		ArrayList<String> actionCheck = new ArrayList<>() {{
@@ -477,7 +479,13 @@ public class GameBattleInterface {
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
 					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerCheckList);
 					if (Objects.equals(inputAnswer, "да")) {
-						gameBattle.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
+						kill = gameBattle.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
+						if (kill) {
+							kills += 1;
+						}
+					}
+					else {
+						continue;
 					}
 				}
 				else {
@@ -492,7 +500,10 @@ public class GameBattleInterface {
 						}
 					System.out.println("Кого атакуешь? Напиши номер:");
 					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], attackableUnitsIndexList);
-					gameBattle.makeAttack(false, inputHero, inputAnswer);
+					kill = gameBattle.makeAttack(false, inputHero, inputAnswer);
+					if (kill) {
+						kills += 1;
+					}
 				}
 			}
 			else if (inputActionNum == 1) {
@@ -542,7 +553,9 @@ public class GameBattleInterface {
 			printCurrentMapAndState();
 			if (gameBattle.endOfGame()) {
 				System.out.println(ANSI_GREEN + "Ты выиграл!" + ANSI_RESET);
-				return;
+				result.put(Game.GOLD, heroCount * 9 + 10);
+				result.put(Game.ELIXIR, kills * 8 + 10);
+				return result;
 			}
 			System.out.println("Ход бота...");
 			ArrayList <String> gamerUnitsNames = new ArrayList<>() {{
@@ -555,5 +568,8 @@ public class GameBattleInterface {
 			System.out.println(secondGamerActionString);
 		}
 		System.out.println(ANSI_RED + "Ты проиграл!" + ANSI_RESET);
+		result.put(Game.GOLD, heroCount * 7);
+		result.put(Game.ELIXIR, kills * 6);
+		return result;
 	}
 }

@@ -1,7 +1,6 @@
 package GameInterfaces;
 
 import BattlePlace.BattleMap;
-import Buildings.Academy;
 import Buildings.Buildable;
 import Buildings.Building;
 import Buildings.Tavern;
@@ -153,6 +152,7 @@ public class GameInterface {
 					" - 2, выйти - 3:");
 			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
 			if (answer == 1) {
+				HashMap<String, Integer> gameBattleAcquiredResources;
 				GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
 				int diff = gameBattleInterface.newGameBattle();
 				System.out.print("Хочешь сыграть в игру по умолчанию - введи 1, со своими полями/юнитами - 2");
@@ -171,7 +171,7 @@ public class GameInterface {
 						mapPath = mapPaths.get(mapPath);
 					}
 					GameManager<BattleMap> gameManager = new GameManager<>();
-					BattleMap battleMap = gameManager.getGameItemByFilename(gamer.input());
+					BattleMap battleMap = gameManager.getGameItemByFilename(mapPath);
 					while (battleMap == null) {
 						System.out.print("""
 								Ты ввел неправильный путь!
@@ -201,7 +201,12 @@ public class GameInterface {
 				}
 				gameBattleInterface.setGameBattle(gameBattle);
 				gameBattleInterface.fillGamerUnitsArray();
-				gameBattleInterface.gaming();
+				gameBattleAcquiredResources = gameBattleInterface.gaming();
+				game.addGold(gameBattleAcquiredResources.get(Game.GOLD));
+				game.addElixir(gameBattleAcquiredResources.get(Game.ELIXIR));
+			}
+			else if (answer == 2) {
+
 			}
 		}
 	}

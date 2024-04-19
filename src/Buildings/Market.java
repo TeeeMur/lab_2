@@ -3,7 +3,6 @@ package Buildings;
 import GameSubjects.Game;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Market implements Buildable{
@@ -12,10 +11,7 @@ public class Market implements Buildable{
 	private final int maxLevel;
 	private final String costType;
 
-	private final ArrayList<HashMap<String, Integer>> upgrades;
-
-	public Market() {
-		upgrades = new ArrayList<>() {{
+	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>() {{
 			add(new HashMap<>() {{
 				put(Game.BUILDING_UPPER_STRING, 0);
 				put(Game.BUILDING_COST_STRING, 100);
@@ -40,7 +36,9 @@ public class Market implements Buildable{
 				put(Game.BUILDING_UPPER_STRING, 1400);
 				put(Game.BUILDING_COST_STRING, 5);
 			}});
-		}};
+		}};;
+
+	public Market() {
 		this.level = 0;
 		this.maxLevel = upgrades.size();
 		this.costType = Game.GOLD;
@@ -75,7 +73,7 @@ public class Market implements Buildable{
 
 	@Override
 	public int getBuildingUpper(String type) {
-		return 0;
+		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override

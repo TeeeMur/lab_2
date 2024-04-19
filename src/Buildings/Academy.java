@@ -11,10 +11,7 @@ public class Academy implements Buildable{
 	private final int maxLevel;
 	private final String costType;
 
-	private final ArrayList<HashMap<String, Integer>> upgrades;
-
-	public Academy() {
-		upgrades = new ArrayList<>() {{
+	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>() {{
 			add(new HashMap<>() {{
 				put(Game.BUILDING_UPPER_STRING, 0);
 				put(Game.BUILDING_COST_STRING, 0);
@@ -32,6 +29,8 @@ public class Academy implements Buildable{
 				put(Game.BUILDING_COST_STRING, 3);
 			}});
 		}};
+
+	public Academy() {
 		this.level = 0;
 		this.maxLevel = upgrades.size();
 		this.costType = Game.ELIXIR;
@@ -66,7 +65,7 @@ public class Academy implements Buildable{
 
 	@Override
 	public int getBuildingUpper(String type) {
-		return 0;
+		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override

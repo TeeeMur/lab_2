@@ -16,10 +16,7 @@ public class Tavern implements Buildable{
 	private final int maxLevel;
 	private final String costType;
 
-	private final ArrayList<HashMap<String, Integer>> upgrades;
-
-	public Tavern() {
-		upgrades = new ArrayList<>() {{
+	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>() {{
 			add(new HashMap<>() {{
 				put(Game.BUILDING_UPPER_STRING, 0);
 				put(Game.BUILDING_COST_STRING, 0);
@@ -41,6 +38,8 @@ public class Tavern implements Buildable{
 				put(Game.BUILDING_COST_STRING, 18);
 			}});
 		}};
+
+	public Tavern() {
 		level = 0;
 		maxLevel = upgrades.size();
 		costType = Game.ELIXIR;
@@ -68,7 +67,8 @@ public class Tavern implements Buildable{
 	public void upgradeBuilding() {
 	}
 
-	public void upgradeBuilding(String upgradeType) {
+	public void upgradeBuilding(String upgradeType) {//исправить: сделать так, чтобы и move, и penalty
+		//можно было улучшать до максимального уровня
 		if (level < maxLevel) {
 			level += 1;
 			if (Objects.equals(upgradeType, PENALTY_TYPE)) {
@@ -90,8 +90,11 @@ public class Tavern implements Buildable{
 		if (Objects.equals(upperType, PENALTY_TYPE)) {
 			return upgrades.get(penaltyLevel).get(Game.BUILDING_UPPER_STRING);
 		}
-		else {
+		else if (Objects.equals(upperType, MOVE_TYPE)){
 			return upgrades.get(moveLevel).get(Game.BUILDING_UPPER_STRING);
+		}
+		else {
+			return 0;
 		}
 	}
 

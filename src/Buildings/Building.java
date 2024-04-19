@@ -70,7 +70,7 @@ public enum Building implements Buildable {
 
 	@Override
 	public int getBuildingUpper(String type) {
-		return 0;
+		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override
