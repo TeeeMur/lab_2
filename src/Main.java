@@ -1,5 +1,3 @@
-import GameInterfaces.GameBattleInterface;
-import GameSubjects.GameBattle;
 import Gamers.Gamer;
 
 public class Main {

@@ -10,7 +10,6 @@ public class Tavern implements Buildable{
 	public static final String PENALTY_TYPE = "PENALTY";
 	public static final String MOVE_TYPE = "MOVE";
 	public static final String NAME = "Таверна";
-	private int level;
 	private int moveLevel;
 	private int penaltyLevel;
 	private final int maxLevel;
@@ -40,7 +39,6 @@ public class Tavern implements Buildable{
 		}};
 
 	public Tavern() {
-		level = 0;
 		maxLevel = upgrades.size();
 		costType = Game.ELIXIR;
 		moveLevel = 0;
@@ -54,7 +52,18 @@ public class Tavern implements Buildable{
 
 	@Override
 	public int getLevel() {
-		return level;
+		return moveLevel + penaltyLevel;
+	}
+
+	@Override
+	public int getLevel(String type) {
+		if (type.equals(MOVE_TYPE)) {
+			return moveLevel;
+		}
+		else if (type.equals(PENALTY_TYPE)) {
+			return penaltyLevel;
+		}
+		return -1;
 	}
 
 	@Override
@@ -67,25 +76,23 @@ public class Tavern implements Buildable{
 	public void upgradeBuilding() {
 	}
 
-	public void upgradeBuilding(String upgradeType) {//исправить: сделать так, чтобы и move, и penalty
-		//можно было улучшать до максимального уровня
-		if (level < maxLevel) {
-			level += 1;
-			if (Objects.equals(upgradeType, PENALTY_TYPE)) {
-				penaltyLevel += 1;
-			}
-			else {
-				moveLevel += 1;
-			}
+	@Override
+	public void upgradeBuilding(String upgradeType) {
+		if (Objects.equals(upgradeType, PENALTY_TYPE) && penaltyLevel != maxLevel) {
+			penaltyLevel++;
+		}
+		else if (Objects.equals(upgradeType, MOVE_TYPE) && moveLevel != maxLevel) {
+			moveLevel++;
 		}
 	}
 
 	@Override
 	@Deprecated
 	public int getBuildingUpper() {
-		return upgrades.get(level).get(Game.BUILDING_UPPER_STRING);
+		return -1;
 	}
 
+	@Override
 	public int getBuildingUpper(String upperType) {
 		if (Objects.equals(upperType, PENALTY_TYPE)) {
 			return upgrades.get(penaltyLevel).get(Game.BUILDING_UPPER_STRING);
@@ -94,20 +101,32 @@ public class Tavern implements Buildable{
 			return upgrades.get(moveLevel).get(Game.BUILDING_UPPER_STRING);
 		}
 		else {
-			return 0;
+			return -1;
 		}
 	}
 
 	@Override
 	public int getUpgradeCost() {
-		int cost;
-		if (level < maxLevel) {
-			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
+		if (moveLevel < penaltyLevel && moveLevel < maxLevel) {
+			return upgrades.get(moveLevel + 1).get(Game.BUILDING_COST_STRING);
+		}
+		else if (penaltyLevel < maxLevel){
+			return upgrades.get(penaltyLevel + 1).get(Game.BUILDING_COST_STRING);
+		}
+		return -1;
+	}
+
+	@Override
+	public int getUpgradeCost(String upgradeType) {
+		if (Objects.equals(upgradeType, PENALTY_TYPE) && penaltyLevel < maxLevel) {
+			return upgrades.get(penaltyLevel + 1).get(Game.BUILDING_COST_STRING);
+		}
+		else if (Objects.equals(upgradeType, MOVE_TYPE) && moveLevel < maxLevel) {
+			return upgrades.get(moveLevel + 1).get(Game.BUILDING_COST_STRING);
 		}
 		else {
-			cost = 0;
+			return -1;
 		}
-		return cost;
 	}
 
 	@Override

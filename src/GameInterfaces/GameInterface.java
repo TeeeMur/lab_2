@@ -1,18 +1,13 @@
 package GameInterfaces;
 
 import BattlePlace.BattleMap;
-import Buildings.Buildable;
-import Buildings.Building;
-import Buildings.Tavern;
+import Buildings.*;
 import GameSubjects.Game;
 import GameSubjects.GameBattle;
 import GameSubjects.GameManager;
 import Gamers.Gamer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 
 import static GameInterfaces.InputChecker.checkAnswer;
 
@@ -137,8 +132,11 @@ public class GameInterface {
 
 	public void choiceView() {
 		String buildingUpgradeAbilityString = "";
+		String addUnitsAbilityString = "";
+		String swapResourcesAbilityString = "";
 		int answer;
-		boolean toHome = false;
+		int actionOrder = 2;
+		boolean toHome = false, swapResourcesAbility = false, addUnitsAbility = false;
 		GameBattle gameBattle;
 		while (true) {
 			if (game.getBuildings().isEmpty()) {
@@ -147,9 +145,17 @@ public class GameInterface {
 				System.out.println("Вот твоя деревня:");
 				printVillage();
 				buildingUpgradeAbilityString = " или улучшить старое";
+				if (game.getBuildings().get(Market.NAME).getLevel() != 0) {
+					swapResourcesAbilityString = "поменять ресурсы - " + ((Integer)(++actionOrder));
+					swapResourcesAbility = true;
+				}
+				if (game.getBuildings().get(Academy.NAME).getLevel() != 0) {
+					addUnitsAbilityString = "добавить своих юнитов - " + ((Integer)(++actionOrder));
+					addUnitsAbility = true;
+				}
 			}
 			System.out.print("Что ты хочешь сделать? Сыграть бой - введи 1, купить новое здание" + buildingUpgradeAbilityString +
-					" - 2, выйти - 3:");
+					" - 2, " + addUnitsAbilityString + swapResourcesAbilityString + " - 0:");
 			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
 			if (answer == 1) {
 				HashMap<String, Integer> gameBattleAcquiredResources;
@@ -206,7 +212,131 @@ public class GameInterface {
 				game.addElixir(gameBattleAcquiredResources.get(Game.ELIXIR));
 			}
 			else if (answer == 2) {
+				boolean spendAbility = false;
+				HashMap<String, Buildable> buildingsHashMap = game.getBuildings();
+				ArrayList<String> spendableBuildings = new ArrayList<>();
+				System.out.println("Вот цены на покупку/улучшение зданий:");
+				for (String buildingName: game.getBuildings().keySet()) {
+					Buildable building = buildingsHashMap.get(buildingName);
+					String costType = building.getCostType();
+					String costTypeString = "";
+					if (costType.equals(Game.GOLD)) {
+						if (game.getGold() >= building.getUpgradeCost() &&
+						building.getLevel() != building.getMaxLevel()) {
+							spendAbility = true;
+							spendableBuildings.add(buildingName);
+						}
+						costTypeString = " золота";
+					} else if (costType.equals(Game.ELIXIR)) {
+						if (game.getElixir() >= building.getUpgradeCost() &&
+						building.getLevel() != building.getMaxLevel()) {
+							spendAbility = true;
+							spendableBuildings.add(buildingName);
+						}
+						costTypeString = " эликсира";
+					}
+					String firstWord;
+					if (building.getLevel() == 0) {
+						firstWord = "Построить ";
+					}
+					else {
+						firstWord = "Улучшить ";
+					}
+					System.out.println(firstWord + " здание " + buildingName + ": " +
+							building.getUpgradeCost() + costTypeString);
+				}
+				if (!spendAbility) {
+					System.out.println("У тебя не хватает ресурсов для покупки/улучшения зданий!");
+					continue;
+				} else {
+					System.out.println("Вот список зданий, которые ты можешь построить/улучшить:");
+					for (String buildingName: spendableBuildings) {
+						System.out.println(buildingName);
+					}
+					System.out.print("Введи название здания, которое хочешь построить/улучшить;" +
+							"\nЕсли не хочешь, введи \"нет\":");
+					ArrayList<String> answerList = new ArrayList<>(spendableBuildings.stream().map(String::toLowerCase).toList());
+					answerList.add("нет");
+					String inputBuildingName = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerList);
+					if (Objects.equals(inputBuildingName, "нет")) {
+						continue;
+					}
+					else {
+						String type = "";
+						String upgradeResult;
+						inputBuildingName = inputBuildingName.substring(0, 1).toUpperCase() + inputBuildingName.substring(1);
+						if (inputBuildingName.equals(Tavern.NAME)) {
+							String penalty = "штраф", move = "перемещение";
+							System.out.print("Введи тип улучшения: на уменьшение штрафов - введи \"" + penalty + "\"" +
+									"\nНа увеличение дальности перемещения - \"" + move + "\":");
+							type = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0],
+									new ArrayList<>(){{add(penalty); add(move);}});
 
+							if (Objects.equals(type, penalty)) {
+								type = Tavern.PENALTY_TYPE;
+							}
+							else {
+								type = Tavern.MOVE_TYPE;
+							}
+						}
+						Buildable upgradeBuilding = buildingsHashMap.get(inputBuildingName);
+						int upgradeCost = upgradeBuilding.getUpgradeCost();
+						String costType = upgradeBuilding.getCostType();
+						game.upgradeGameBuilding(inputBuildingName, type);
+						if (costType.equals(Game.GOLD)) {
+							game.spendGold(upgradeCost);
+						}
+						else if (costType.equals(Game.ELIXIR)) {
+							game.spendElixir(upgradeCost);
+						}
+						upgradeResult = "Твое здание " + inputBuildingName;
+						if (buildingsHashMap.get(inputBuildingName).getLevel() == 1) {
+							upgradeResult += " построено!";
+						}
+						else {
+							upgradeResult += " улучшено до " + buildingsHashMap.get(inputBuildingName).getLevel() +
+									" уровня!";
+						}
+						System.out.println(upgradeResult);
+					}
+				}
+			}
+			if (answer == 3) {
+				if (actionOrder == 2) {
+					System.out.println("Ты сюда не должен был зайти...");
+				}
+				else {
+					if (swapResourcesAbility) {
+						System.out.println("Таак... хочешь поменять ресурсы..." +
+								"\nУ тебя есть рынок, он берет " + game.getBuildings().get(Market.NAME).getBuildingUpper() + "% комиссии!");
+						System.out.print("У тебя в наличии:");
+						ArrayList<String> resourcesAbleToChange = new ArrayList<>();
+						for (String resourceType: game.getResources().keySet()) {
+							System.out.println(resourceType + ": " + game.getResources().get(resourceType));
+							if (game.getResources().get(resourceType) * (1f - (float)game.getBuildings().get(Market.NAME).getBuildingUpper() / 100f) >= 1) {
+								resourcesAbleToChange.add(resourceType);
+							}
+						}
+						System.out.println("Ты можешь обменять эти ресурсы:");
+						for (String resourceType: resourcesAbleToChange) {
+							System.out.println(resourceType);
+						}
+						System.out.println("Что хочешь обменять? Если передумал, введи \"нет\":");
+						ArrayList<String> answerList = new ArrayList<>(resourcesAbleToChange.stream().map(String::toLowerCase).toList());
+						answerList.add("нет");
+						String inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerList);
+						if (Objects.equals(inputAnswer, "нет")) {
+							continue;
+						}
+						else {
+							inputAnswer = inputAnswer.substring(0, 1).toUpperCase() + inputAnswer.substring(1);
+							
+						}
+					}
+					else {
+
+					}
+				}
 			}
 		}
 	}

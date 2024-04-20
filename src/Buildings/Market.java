@@ -55,6 +55,11 @@ public class Market implements Buildable{
 	}
 
 	@Override
+	public int getLevel(String type) {
+		return level;
+	}
+
+	@Override
 	public int getMaxLevel() {
 		return maxLevel;
 	}
@@ -67,17 +72,38 @@ public class Market implements Buildable{
 	}
 
 	@Override
+	public void upgradeBuilding(String upgradeType) {
+		if (level < maxLevel) {
+			level += 1;
+		}
+	}
+
+	@Override
 	public int getBuildingUpper() {
 		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override
+	@Deprecated
 	public int getBuildingUpper(String type) {
 		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
 	}
 
 	@Override
 	public int getUpgradeCost() {
+		int cost;
+		if (level < maxLevel) {
+			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
+		}
+		else {
+			cost = 0;
+		}
+		return cost;
+	}
+
+	@Override
+	@Deprecated
+	public int getUpgradeCost(String upgradeType) {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);

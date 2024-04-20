@@ -3,10 +3,7 @@ package GameSubjects;
 import Buildings.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 public class Game implements Serializable {
 
@@ -61,15 +58,13 @@ public class Game implements Serializable {
 		return academyUnits;
 	}
 
-	public void createNewGameBuildingUpper(String buildingName) {
-		if (buildings.get(buildingName).getLevel() != 0) {
-			return;
+	public void upgradeGameBuilding(String buildingName, String type) {
+		if (Objects.equals(buildingName, Tavern.NAME)) {
+			buildings.get(Tavern.NAME).upgradeBuilding(type);
 		}
-		buildings.get(buildingName).upgradeBuilding();
-	}
-
-	public void upgradeGameBuilding(String buildingName) {
-		buildings.get(buildingName).upgradeBuilding();
+		else {
+			buildings.get(buildingName).upgradeBuilding();
+		}
 	}
 
 	public void addMapPath(String name, String mapPath) {
@@ -130,6 +125,14 @@ public class Game implements Serializable {
 
 	public int getGold() {
 		return resources.get(GOLD);
+	}
+
+	public HashMap<String, Integer> getResources() {
+		HashMap<String, Integer> res = new HashMap<>();
+		for (String type : resources.keySet()) {
+			res.put(type, resources.get(type));
+		}
+		return res;
 	}
 
 }

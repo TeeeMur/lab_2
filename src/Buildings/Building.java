@@ -52,12 +52,24 @@ public enum Building implements Buildable {
 	}
 
 	@Override
+	public int getLevel(String type) {
+		return level;
+	}
+
+	@Override
 	public int getMaxLevel() {
 		return maxLevel;
 	}
 
 	@Override
 	public void upgradeBuilding() {
+		if (level < maxLevel) {
+			level += 1;
+		}
+	}
+
+	@Override
+	public void upgradeBuilding(String upgradeType) {
 		if (level < maxLevel) {
 			level += 1;
 		}
@@ -75,6 +87,19 @@ public enum Building implements Buildable {
 
 	@Override
 	public int getUpgradeCost() {
+		int cost;
+		if (level < maxLevel) {
+			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
+		}
+		else {
+			cost = 0;
+		}
+		return cost;
+	}
+
+	@Override
+	@Deprecated
+	public int getUpgradeCost(String upgradeType) {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
