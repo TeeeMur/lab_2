@@ -14,14 +14,12 @@ import static GameSubjects.GameManager.inputBattleMap;
 public class GameBattleEditorGUI {
 
 	Gamer gamer;
-	GameBattle game;
 
-	GameBattleEditorGUI(Gamer gamer, GameBattle gameBattle) {
+	public GameBattleEditorGUI(Gamer gamer) {
 		this.gamer = gamer;
-		this.game = gameBattle;
 	}
 
-	public void createGameBattle() {
+	public void createBattleMap() {
 		String mapSizesConstraintString = "Высота и ширина карты не могут быть меньше 6 или больше 20";
 		System.out.println("Для того, чтобы создать новую карту, тебе нужно ввести размер - ширину и высоту карты.");
 		System.out.println(mapSizesConstraintString);
@@ -57,10 +55,10 @@ public class GameBattleEditorGUI {
 		HashMap<String, HashMap<String, Float>> inputUnitTypePenaltyMap;
 		if (answer == 2) {
 			inputUnitTypePenaltyMap = new HashMap<>();
-			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть больше 5 или меньше 3:");
+			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть только 4:");
 			ArrayList<String> obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
-			while (obstacles.size() < 2) {
-				System.out.println("Ты ввел только одно препятствие!");
+			while (obstacles.size() != 4) {
+				System.out.println("Ты НЕ 4 препятствия!");
 			}
 			System.out.println("Для каждого типа юнитов введи штрафы за передвижение по препятствиям:");
 			for (String unitType: GameBattle.getUnitsTypes()) {
@@ -94,6 +92,7 @@ public class GameBattleEditorGUI {
 			printBattleMapExample(sizeX, sizeY);
 			map = inputBattleMap(gamer, sizeX, sizeY);
 		}
+
 	}
 
 	private void printBattleMapExample(int sizeX, int sizeY) {

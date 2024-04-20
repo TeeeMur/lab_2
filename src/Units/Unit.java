@@ -34,7 +34,9 @@ public class Unit {
 		movePoints = unitParams.get(4);
 		costPoints = unitParams.get(5);
 		penalty = new HashMap<>();
-		penalty.putAll(unitTypePenalties);
+		for (String key : unitTypePenalties.keySet()) {
+			penalty.put(key, unitTypePenalties.get(key));
+		}
 	}
 
 	public String getMapImage() {

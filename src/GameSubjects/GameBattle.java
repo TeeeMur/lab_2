@@ -68,9 +68,9 @@ public class GameBattle {
 		this.battleMap = battleMap;
 		float penaltyDowner = 1f - (float)penaltyDecrease / 100f;
 		unitTypesPenalties = this.battleMap.getPenalties();
-		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenalties, this, difficulty);
+				unitsSpecsMap, unitTypesPenalties, battleMap, difficulty);
 		for (String unitType : unitTypesPenalties.keySet()) {
 			for (String field : unitTypesPenalties.get(unitType).keySet()) {
 				float prePenalty = unitTypesPenalties.get(unitType).getOrDefault(field, 1.1f);
@@ -94,18 +94,23 @@ public class GameBattle {
 
 	public GameBattle(int difficulty) {
 		battleMap = new BattleMap(15, 15, difficulty);
-		fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
-		unitTypesPenalties = battleMap.getPenalties();
+		wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
-				unitsSpecsMap, unitTypesPenalties, this, difficulty);
+				unitsSpecsMap, battleMap.getPenalties(), battleMap, difficulty);
+		unitTypesPenalties = battleMap.getPenalties();
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
 
-	private void fillWallet(int sizeX, int sizeY, int difficulty) {
-		wallet = 75;
+	public static int maxWallet() {
+		return fillWallet(BattleMap.getMaxSizeX(), BattleMap.getMaxSizeY(), 5);
+	}
+
+	private static int fillWallet(int sizeX, int sizeY, int difficulty) {
+		int newWallet = 75;
 		for (int i = 0; i < 6 - difficulty; i++) {
-			wallet += (sizeX + sizeY) / 2;
+			newWallet += (sizeX + sizeY) / 2;
 		}
+		return newWallet;
 	}
 
 	public void setGamerUnits(HashMap<String, Integer> purchasedUnitsMap) {
@@ -139,7 +144,7 @@ public class GameBattle {
 		return wallet;
 	}
 
-	public String colorByType(String unitType) {
+	public static String colorByType(String unitType) {
 		if (Objects.equals(unitType, unitsTypes.getFirst())) {
 			return ANSI_GREEN;
 		}

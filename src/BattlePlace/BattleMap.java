@@ -19,7 +19,7 @@ public class BattleMap implements Serializable {
 	private final String[][] battleMapMatrix;
 	private static final ArrayList<String> DEFAULT_FIELDS = new ArrayList<>(Arrays.asList("▓", "#", "@", "!"));
 	private ArrayList<String> mapBasicFields = DEFAULT_FIELDS;
-	private HashMap<String, HashMap<String, Float>> penalties;
+	private final HashMap<String, HashMap<String, Float>> penalties;
 	private static final HashMap<String, HashMap<String, Float>> DEFAULT_PENALTIES = new HashMap<>(){{
 		put(GameBattle.getUnitsTypes().getFirst(), new HashMap<>(){{
 			put(DEFAULT_FIELDS.getFirst(), 1f);
@@ -33,7 +33,7 @@ public class BattleMap implements Serializable {
 			put(DEFAULT_FIELDS.get(2), 2.2f);
 			put(DEFAULT_FIELDS.get(3), 1f);
 		}});
-		put(GameBattle.getUnitsTypes().get(1), new HashMap<>(){{
+		put(GameBattle.getUnitsTypes().get(2), new HashMap<>(){{
 			put(DEFAULT_FIELDS.getFirst(), 1f);
 			put(DEFAULT_FIELDS.get(1), 2.2f);
 			put(DEFAULT_FIELDS.get(2), 1.2f);
@@ -42,6 +42,7 @@ public class BattleMap implements Serializable {
 	}};
 
 	public BattleMap(int mapSizeX, int mapSizeY, int difficulty) {
+		penalties = DEFAULT_PENALTIES;
 		sizeX = mapSizeX;
 		sizeY = mapSizeY;
 		maxUnitsOnLine = sizeX - 2;
@@ -112,5 +113,9 @@ public class BattleMap implements Serializable {
 
 	public HashMap<String, HashMap<String, Float>> getPenalties() {
 		return penalties;
+	}
+
+	public static HashMap<String, HashMap<String, Float>> getDefaultPenalties() {
+		return DEFAULT_PENALTIES;
 	}
 }

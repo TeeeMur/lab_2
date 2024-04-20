@@ -87,44 +87,22 @@ public class Game implements Serializable {
 		return buildings.keySet();
 	}
 
-	public void addElixir(int count) {
-		if (count < 0) {
+	public void addResource(int count, String type) {
+		if (!resources.containsKey(type) || count < 0) {
 			return;
 		}
-		int pre = resources.getOrDefault(ELIXIR, 0);
-		resources.put(ELIXIR, pre + count);
+		resources.put(type, resources.get(type) + count);
 	}
 
-	public void addGold(int count) {
-		if (count < 0) {
+	public void spendResource(int count, String type) {
+		if (!resources.containsKey(type) || count > resources.get(type)) {
 			return;
 		}
-		int pre = resources.getOrDefault(GOLD, 0);
-		resources.put(GOLD, pre + count);
+		resources.put(type, resources.get(type) - count);
 	}
 
-	public void spendElixir(int count) {
-		int pre = resources.get(ELIXIR);
-		if (count > 0 | pre < count) {
-			return;
-		}
-		resources.put(ELIXIR, pre - count);
-	}
-
-	public void spendGold(int count) {
-		int pre = resources.get(GOLD);
-		if (count > 0 | pre < count) {
-			return;
-		}
-		resources.put(GOLD, pre - count);
-	}
-
-	public int getElixir() {
-		return resources.get(ELIXIR);
-	}
-
-	public int getGold() {
-		return resources.get(GOLD);
+	public int getResource(String type) {
+		return resources.get(type);
 	}
 
 	public HashMap<String, Integer> getResources() {
@@ -133,6 +111,10 @@ public class Game implements Serializable {
 			res.put(type, resources.get(type));
 		}
 		return res;
+	}
+
+	public static int calculateCost(int health, int attack, int attackDistance, int defense, int move) {
+		return health + attack + attackDistance + defense + move + 12;
 	}
 
 }

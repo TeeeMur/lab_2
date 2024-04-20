@@ -12,11 +12,6 @@ import static java.util.Collections.min;
 
 public class GameBattleInterface {
 
-	private final ArrayList<String> answerCheckList = new ArrayList<>() {{
-			add("да");
-			add("нет");
-		}};
-
 	public static final String ANSI_RESET = "\u001B[0m";
 	public static final String ANSI_YELLOW = "\u001B[33m";
 	public static final String ANSI_GREEN = "\u001B[32m";
@@ -39,7 +34,7 @@ public class GameBattleInterface {
 				add(String.format("%d", i));
 			}
 		}};
-		String answ = gamer.input();
+		String answ = gamer.input().toLowerCase().split(" ")[0];
 		return Integer.parseInt(checkAnswer(gamer, answ, checkList));
 	}
 
@@ -64,6 +59,7 @@ public class GameBattleInterface {
 	}
 
 	public void fillGamerUnitsArray() {
+		String prePrintGamerUnitsArrayChoice = "Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:";
 		ArrayList<String> purchaseStringList;
 		int sum = 0, purchaseUnitCount, unitsCount = 0;
 		boolean answ;
@@ -74,7 +70,8 @@ public class GameBattleInterface {
 			}
 		}};
 		String purchaseUnitName;
-		printGamerUnitsArrayChoice();
+		System.out.println(prePrintGamerUnitsArrayChoice);
+		printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
 		String writeYourChoiceString = """
 				Напиши в строку, каких и сколько героев хочешь взять, например: Мечник 2""";
 		String writeAndAnswerChoiceString = writeYourChoiceString + "\n" +
@@ -112,7 +109,7 @@ public class GameBattleInterface {
 						purchaseStringList.add(gamer.input().split(" ")[0]);
 						break;
 					}
-					if (answerCheckList.contains(purchaseStringList.getFirst())) {
+					if (InputChecker.getAnswerCheckList().contains(purchaseStringList.getFirst())) {
 						answ = true;
 					}
 					break;
@@ -126,7 +123,8 @@ public class GameBattleInterface {
 					sum = 0;
 					unitsCount = 0;
 					System.out.println("Набор юнитов начинается заново!");
-					printGamerUnitsArrayChoice();
+					System.out.println(prePrintGamerUnitsArrayChoice);
+					printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
 					System.out.println(writeYourChoiceString);
 					continue;
 				} else if (Objects.equals(purchaseStringList.getFirst(), "да")) {
@@ -175,7 +173,7 @@ public class GameBattleInterface {
 					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String purchaseConfirmation = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerCheckList);
+				String purchaseConfirmation = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], InputChecker.getAnswerCheckList());
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					gameBattle.setGamerUnits(hasPurchasedStringMap);
 					System.out.println("Твой набор героев:");
@@ -189,26 +187,25 @@ public class GameBattleInterface {
 					sum = 0;
 					unitsCount = 0;
 					System.out.println("Набор юнитов начинается заново!");
-					printGamerUnitsArrayChoice();
+					System.out.println(prePrintGamerUnitsArrayChoice);
+					printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
 					System.out.println(writeYourChoiceString);
 				}
 			}
 		}
 	}
 
-	private void printGamerUnitsArrayChoice() {
-		HashMap<String, HashMap<String, Float>> unitTypesPenalties = gameBattle.getUnitTypesPenalties();
-		HashMap<String, ArrayList<String>> unitsTyping = gameBattle.getUnitsTyping();
-		HashMap<String, ArrayList<Integer>> unitsSpecsMap = gameBattle.getUnitsSpecsMap();
+	public static void printUnitsArray(HashMap<String, HashMap<String, Float>> unitTypesPenalties,
+									   HashMap<String, ArrayList<String>> unitsTyping,
+									   HashMap<String, ArrayList<Integer>> unitsSpecsMap) {
 		ArrayList<String> unitsTypes = GameBattle.getUnitsTypes();
-		System.out.println("Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:");
 		String divider = "+------+-----------------+----------+-------+-----------------+--------+---------------+-----------+\n";
 		String columnNames = "|   №  |     Название    | Здоровье | Атака | Дальность атаки | Защита |  Перемещение  | Стоимость |\n";
 		System.out.print(divider);
 		Object[] tempSpecs = new Object[8];
 		int iter = 1;
 		for (int i = 0; i < unitsTypes.size(); i++) {
-			String typeName = unitsTypes.get(i) + " ".repeat(unitsTypes.stream().mapToInt(String::length).max().orElse(8));
+			String typeName = unitsTypes.get(i) + " ".repeat(unitsTypes.stream().mapToInt(String::length).max().orElse(15) - unitsTypes.get(i).length() + 5);
 			String typeColumnName = "|      |           " + ANSI_BLUE + typeName + ANSI_RESET + "         |   " +
 				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(i))) + "      |\n";
 			System.out.print(typeColumnName);
@@ -227,13 +224,13 @@ public class GameBattleInterface {
 		}
 	}
 
-	private String specsAlignmentByType(String unitsType) {
-		String color = gameBattle.colorByType(unitsType);
+	private static String specsAlignmentByType(String unitsType) {
+		String color = GameBattle.colorByType(unitsType);
 		return "|  %2d  | " + color + "%-15s" + ANSI_RESET +
 				" |    %2d    |  %2d   |        %2d       |   %2d   |      %2d       |    %3d    |\n";
 	}
 
-	private String formattedTypeOfUnitsColumnName(HashMap<String, Float> unitPenalties) {
+	private static String formattedTypeOfUnitsColumnName(HashMap<String, Float> unitPenalties) {
 		StringBuilder pattern = new StringBuilder("Штраф за 1 клетку:");
 		for (String field: unitPenalties.keySet()) {
 			pattern.append(String.format(" %s: %.1f", field, unitPenalties.get(field)));
@@ -477,7 +474,7 @@ public class GameBattleInterface {
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
-					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerCheckList);
+					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], InputChecker.getAnswerCheckList());
 					if (Objects.equals(inputAnswer, "да")) {
 						kill = gameBattle.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 						if (kill) {
