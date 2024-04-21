@@ -2,11 +2,12 @@ package Buildings;
 
 import GameSubjects.Game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class Tavern implements Buildable{
+public class Tavern implements Buildable, Serializable {
 	public static final String PENALTY_TYPE = "PENALTY";
 	public static final String MOVE_TYPE = "MOVE";
 	public static final String NAME = "Таверна";
@@ -21,20 +22,20 @@ public class Tavern implements Buildable{
 				put(Game.BUILDING_COST_STRING, 0);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 250);
-				put(Game.BUILDING_COST_STRING, 5);
+				put(Game.BUILDING_UPPER_STRING, 5);
+				put(Game.BUILDING_COST_STRING, 250);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 600);
-				put(Game.BUILDING_COST_STRING, 10);
+				put(Game.BUILDING_UPPER_STRING, 10);
+				put(Game.BUILDING_COST_STRING, 600);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 800);
-				put(Game.BUILDING_COST_STRING, 15);
+				put(Game.BUILDING_UPPER_STRING, 15);
+				put(Game.BUILDING_COST_STRING, 800);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 1100);
-				put(Game.BUILDING_COST_STRING, 18);
+				put(Game.BUILDING_UPPER_STRING, 18);
+				put(Game.BUILDING_COST_STRING, 1100);
 			}});
 		}};
 

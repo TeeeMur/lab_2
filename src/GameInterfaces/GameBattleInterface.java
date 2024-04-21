@@ -271,11 +271,19 @@ public class GameBattleInterface {
 		ArrayList<String> currentGamerUnitsStateLines = getCurrentStateLines();
 		int minLines = Math.min(gameBattle.getBattleMap().getSizeY(), currentGamerUnitsStateLines.size());
 		System.out.print("   ");
-		for (int i = 1; i < 10; i++) {
-			System.out.format("%d ", i);
+		int columnsCount = gameBattle.getBattleMap().getSizeX();
+		if (columnsCount >= 10) {
+			for (int i = 1; i < 10; i++) {
+				System.out.format("%d ", i);
+			}
+			for (int i = 10; i < columnsCount; i++) {
+				System.out.format("%d", i);
+			}
 		}
-		for (int i = 10; i < 16; i++) {
-			System.out.format("%d", i);
+		else {
+			for (int i = 1; i < columnsCount; i++) {
+				System.out.format("%d ", i);
+			}
 		}
 		System.out.println(" X");
 		for (int i = 0; i < minLines; i++) {
@@ -422,13 +430,17 @@ public class GameBattleInterface {
 		}
 		battleLine = gameBattle.getBattleMap().getBattleMapLine(i);
 		for (int j = 0; j < gameBattle.getBattleMap().getSizeX(); j++) {
-			System.out.print(battleLine[j] + " ");
+			if (removeAscii(battleLine[j]).length() != 1) {
+				System.out.print(battleLine[j]);
+			} else {
+				System.out.print(battleLine[j] + " ");
+			}
 		}
 	}
 
 	private String removeAscii(String str) {
 		if (str.length() >= 5) {
-			return str.substring(5, 6);
+			return str.substring(5, str.length() - ANSI_RESET.length());
 		}
 		return str;
 	}

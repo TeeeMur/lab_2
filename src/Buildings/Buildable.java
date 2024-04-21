@@ -1,6 +1,8 @@
 package Buildings;
 
-public interface Buildable {
+import java.io.Serializable;
+
+public interface Buildable extends Serializable {
 
 	String getName();
 

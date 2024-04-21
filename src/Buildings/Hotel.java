@@ -2,10 +2,11 @@ package Buildings;
 
 import GameSubjects.Game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Hotel implements Buildable{
+public class Hotel implements Buildable, Serializable {
 	public static final String NAME = "Отель";
 	private int level;
 	private final int maxLevel;
@@ -17,28 +18,28 @@ public class Hotel implements Buildable{
 				put(Game.BUILDING_COST_STRING, 0);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 80);
-				put(Game.BUILDING_COST_STRING, 1);
+				put(Game.BUILDING_UPPER_STRING, 1);
+				put(Game.BUILDING_COST_STRING, 80);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 180);
-				put(Game.BUILDING_COST_STRING, 4);
+				put(Game.BUILDING_UPPER_STRING, 4);
+				put(Game.BUILDING_COST_STRING, 180);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 500);
-				put(Game.BUILDING_COST_STRING, 8);
+				put(Game.BUILDING_UPPER_STRING, 8);
+				put(Game.BUILDING_COST_STRING, 500);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 800);
-				put(Game.BUILDING_COST_STRING, 10);
+				put(Game.BUILDING_UPPER_STRING, 10);
+				put(Game.BUILDING_COST_STRING, 800);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 1000);
-				put(Game.BUILDING_COST_STRING, 12);
+				put(Game.BUILDING_UPPER_STRING, 12);
+				put(Game.BUILDING_COST_STRING, 1000);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 1800);
-				put(Game.BUILDING_COST_STRING, 15);
+				put(Game.BUILDING_UPPER_STRING, 15);
+				put(Game.BUILDING_COST_STRING, 1800);
 			}});
 		}};
 

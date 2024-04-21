@@ -10,8 +10,8 @@ import java.util.HashMap;
 public class BattleMap implements Serializable {
 	int sizeX, sizeY;
 
-	private static final int maxSizeX = 20;
-	private static final int maxSizeY = 20;
+	private static final int maxSizeX = 16;
+	private static final int maxSizeY = 16;
 	private static final int minSizeX = 6;
 	private static final int minSizeY = 6;
 
@@ -45,7 +45,7 @@ public class BattleMap implements Serializable {
 		penalties = DEFAULT_PENALTIES;
 		sizeX = mapSizeX;
 		sizeY = mapSizeY;
-		maxUnitsOnLine = sizeX - 2;
+		maxUnitsOnLine = mapSizeX - 2;
 		battleMapMatrix = new String[mapSizeY][mapSizeX];
 		ArrayList<String> fieldsToChoose = new ArrayList<>(DEFAULT_FIELDS);
 		for (int i = difficulty; i < 6 + sizeX + sizeY - 28; i++) {
@@ -67,9 +67,9 @@ public class BattleMap implements Serializable {
 	public BattleMap(String[][] inputBattleMapMatrix, ArrayList<String> basicFields, HashMap<String, HashMap<String, Float>> penalties) {
 		mapBasicFields = new ArrayList<>(basicFields);
 		this.penalties = penalties;
-		maxUnitsOnLine = sizeX - 2;
 		sizeX = inputBattleMapMatrix[0].length;
 		sizeY = inputBattleMapMatrix.length;
+		maxUnitsOnLine = sizeX - 2;
 		battleMapMatrix = new String[sizeY][sizeX];
 		System.arraycopy(inputBattleMapMatrix, 0, battleMapMatrix, 0, sizeY);
 	}

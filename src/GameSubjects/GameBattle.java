@@ -161,12 +161,12 @@ public class GameBattle {
 		Unit eachUnitToPlace;
 		int xCoord;
 		ArrayList<Integer> placeCoords = new ArrayList<>() {{
-			for (int i = 7; i >= 0; i--) {
+			for (int i = battleMap.getSizeX() / 2; i >= 0; i--) {
 				add(i);
 			}
 			int j = 0;
-			for (int i = 1; i < 14; i += 2) {
-				add(i, 8 + j);
+			for (int i = 1; i < battleMap.getSizeX(); i += 2) {
+				add(i, battleMap.getSizeX() / 2 + 1 + j);
 				j++;
 			}
 		}};

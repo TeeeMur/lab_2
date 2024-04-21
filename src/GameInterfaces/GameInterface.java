@@ -6,7 +6,6 @@ import GameSubjects.Game;
 import GameSubjects.GameBattle;
 import GameSubjects.GameManager;
 import Gamers.Gamer;
-
 import java.util.*;
 
 import static GameInterfaces.InputChecker.checkAnswer;
@@ -31,7 +30,7 @@ public class GameInterface {
 	public String startGame() {
 		System.out.println("Привет!");
 		System.out.print("Хочешь загрузиться с сохраненного файла - введи 1, начать новую игру - введи 2, " +
-				"\nсоздать новую карту c новыми героями - введи 3, выйти из программы - 4:");
+				"\nсоздать новую карту c новыми полями - введи 3, выйти из программы - 4:");
 		int choice = Integer.parseInt(checkAnswer(gamer, gamer.input().split(" ")[0], new ArrayList<>(Arrays.asList("1", "2", "3", "4"))));
 		return switch (choice) {
 			case (1) -> CHOICE_DOWNLOAD;
@@ -49,8 +48,9 @@ public class GameInterface {
 				String gameLocation = gamer.input();
 				GameManager<Game> gameManager = new GameManager<>();
 				Game inputGame = gameManager.getGameItemByFilename(gameLocation);
-				while (game == null) {
+				while (inputGame == null) {
 					System.out.println("Введи путь к твоей игре заново!");
+					gameLocation = gamer.input();
 					inputGame = gameManager.getGameItemByFilename(gameLocation);
 					if (attempts++ >= 5) {
 						System.out.println("Слишком много попыток ввести путь...");
@@ -168,16 +168,17 @@ public class GameInterface {
 		String buildingUpgradeAbilityString = "";
 		String addUnitsAbilityString = "";
 		String swapResourcesAbilityString = "";
+		String absolutePathSave = "";
 		int answer;
-		int actionOrder = 2;
+		int actionOrder = 3;
 		boolean toHome = false, swapResourcesAbility = false, addUnitsAbility = false;
 		GameBattle gameBattle;
 		while (true) {
+			System.out.println("Вот твои ресурсы:");
+			printResources();
 			if (getVillageImages().isEmpty()) {
-				System.out.println("У тебя, к сожалению, пока что деревни нет((");
+				System.out.println("Твоя деревня пока что пустая...");
 			} else {
-				System.out.println("Вот твои ресурсы:");
-				printResources();
 				System.out.println("Вот твоя деревня:");
 				printVillage();
 				buildingUpgradeAbilityString = " или улучшить старое";
@@ -195,8 +196,22 @@ public class GameInterface {
 				}
 			}
 			System.out.print("Что ты хочешь сделать? Сыграть бой - введи 1, купить новое здание" + buildingUpgradeAbilityString +
-					" - 2, " + addUnitsAbilityString + swapResourcesAbilityString + "выйти - 0:");
-			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2"))));
+					" - 2, сохранить игру - 3, " + addUnitsAbilityString + swapResourcesAbilityString + "выйти - 0:");
+			boolean finalSwapResourcesAbility = swapResourcesAbility;
+			boolean finalAddUnitsAbility = addUnitsAbility;
+			ArrayList<String> actionChoiceList = new ArrayList<>(){{
+				add("0");
+				add("1");
+				add("2");
+				add("3");
+				if (finalSwapResourcesAbility || finalAddUnitsAbility) {
+					add("4");
+				}
+				if (finalAddUnitsAbility && finalSwapResourcesAbility) {
+					add("5");
+				}
+			}};
+			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), actionChoiceList));
 			if (answer == 1) {
 				HashMap<String, Integer> gameBattleAcquiredResources;
 				GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
@@ -250,6 +265,10 @@ public class GameInterface {
 				gameBattleAcquiredResources = gameBattleInterface.gaming();
 				game.addResource(gameBattleAcquiredResources.get(Game.GOLD), Game.GOLD);
 				game.addResource(gameBattleAcquiredResources.get(Game.ELIXIR), Game.ELIXIR);
+				System.out.println("После битвы ты получил столько ресурсов:");
+				for (String resourceType: gameBattleAcquiredResources.keySet()) {
+					System.out.println(resourceType + ": " + gameBattleAcquiredResources.get(resourceType));
+				}
 			}
 			else if (answer == 2) {
 				boolean spendAbility = false;
@@ -299,9 +318,7 @@ public class GameInterface {
 					ArrayList<String> answerList = new ArrayList<>(spendableBuildings.stream().map(String::toLowerCase).toList());
 					answerList.add("нет");
 					String inputBuildingName = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerList);
-					if (Objects.equals(inputBuildingName, "нет")) {
-					}
-					else {
+					if (!Objects.equals(inputBuildingName, "нет")) {
 						String type = "";
 						String upgradeResultString;
 						inputBuildingName = inputBuildingName.substring(0, 1).toUpperCase() + inputBuildingName.substring(1);
@@ -336,13 +353,49 @@ public class GameInterface {
 						System.out.println(upgradeResultString);
 					}
 				}
+			} else if (answer == 3) {
+				if (!absolutePathSave.isEmpty()){
+					System.out.println("Твоя игра уже сохранена!");
+					System.out.println("Путь к твоей игре: " + absolutePathSave);
+					continue;
+				}
+				System.out.println("Введи путь для сохранения игры (введи \"нет\", если передумал):");
+				String inputAnswer = gamer.input();
+				if (!inputAnswer.toLowerCase().split(" ")[0].equals("нет")) {
+					GameManager<Game> gameManager = new GameManager<>();
+					while (!gameManager.checkDirectory(inputAnswer) && !inputAnswer.equals("нет")) {
+						System.out.println("Это не директория! Введи путь к ней или введи \"нет\", если передумал!");
+						inputAnswer = gamer.input();
+					}
+					if (inputAnswer.equals("нет")) {
+						break;
+					}
+					System.out.println("Введи имя файла:");
+					String fileName = gamer.input();
+					while (fileName.contains(" ")) {
+						System.out.println("Введи имя файла без пробела!");
+						fileName = gamer.input();
+					}
+					if (!inputAnswer.endsWith("\\")) {
+						inputAnswer = inputAnswer + "\\";
+					}
+					absolutePathSave = inputAnswer + fileName + ".ser";
+					boolean saveResult = gameManager.saveGameItemToDirectory(game, absolutePathSave);
+					if (saveResult) {
+						System.out.println("Твоя игра сохранена!");
+						System.out.println("Путь к твоей игре: " + absolutePathSave);
+					}
+					else {
+						System.out.println("Что-то пошло не так и твоя игра не сохранилась...");
+					}
+				}
 			}
-			else if (answer == 3 || answer == 4) {
-				if (actionOrder == 2) {
+			else if (answer == 4 || answer == 5) {
+				if (actionOrder == 3) {
 					System.out.println("Ты сюда не должен был зайти...");
 				}
 				else {
-					if (answer == 3 && swapResourcesAbility) {
+					if (answer == 4 && swapResourcesAbility) {
 						System.out.println("Таак... хочешь поменять ресурсы..." +
 								"\nУ тебя есть рынок, он берет " + game.getBuildings().get(Market.NAME).getBuildingUpper() + "% комиссии!");
 						System.out.print("У тебя в наличии:");
@@ -364,14 +417,11 @@ public class GameInterface {
 						String inputFirstResource = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerList);
 						System.out.println("На что хочешь обменять?");
 						String inputSecondResource = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], answerList);
-						inputSecondResource = inputSecondResource.substring(0, 1).toUpperCase() + inputSecondResource.substring(1);
-						if (Objects.equals(inputFirstResource, "нет") || Objects.equals(inputSecondResource, "нет")) {
-						}
-						else if (Objects.equals(inputFirstResource, inputSecondResource)) {
+						if (!Objects.equals(inputFirstResource, "нет") && Objects.equals(inputFirstResource, inputSecondResource)) {
 							System.out.println("Ты хочешь обменять " + inputFirstResource + " на " + inputSecondResource + "!");
 							System.out.println("Ты задумал что-то неладное...");
 						}
-						else {
+						else if (!Objects.equals(inputFirstResource, "нет") && !Objects.equals(inputSecondResource, "нет")){
 							inputFirstResource = inputFirstResource.substring(0, 1).toUpperCase() + inputFirstResource.substring(1);
 							inputSecondResource = inputSecondResource.substring(0, 1).toUpperCase() + inputSecondResource.substring(1);
 							String resourceRequest = "Введи количество ресурса " + inputFirstResource + ", который хочешь обменять на " + inputSecondResource +
@@ -401,7 +451,7 @@ public class GameInterface {
 							}
 						}
 					}
-					else if (addUnitsAbility && (actionOrder == 4 || actionOrder == 3)){
+					else if (addUnitsAbility){
 						int maxAcademyUnitsCapacity = game.getBuildings().get(Academy.NAME).getBuildingUpper();
 						System.out.println("Ты хочешь добавить новых юнитов??");
 						if (game.getAcademyUnits().isEmpty()) {
@@ -491,6 +541,7 @@ public class GameInterface {
 					}
 				}
 			} else {
+				System.out.println("Ты вышел из игры!");
 				break;
 			}
 		}

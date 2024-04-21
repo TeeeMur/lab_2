@@ -14,6 +14,7 @@ public class Main {
 		}
 		else if (choice.equals(GameInterface.CHOICE_MAP)) {
 			GameBattleEditorGUI gameBattleEditorGUI = new GameBattleEditorGUI(gamer);
+			gameBattleEditorGUI.createBattleMap();
 		}
 	}
 }

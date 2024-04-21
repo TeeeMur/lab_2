@@ -3,8 +3,7 @@ package GameSubjects;
 import Gamers.Gamer;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 public class GameManager<T> {
 	public boolean saveGameItemToDirectory(T gameItem, String absolutePath) {
@@ -14,7 +13,12 @@ public class GameManager<T> {
 		} catch (IOException e) {
 			return false;
 		}
-		return false;
+		return true;
+	}
+
+	public boolean checkDirectory(String absolutePath) {
+		File file = new File(absolutePath);
+		return file.isDirectory();
 	}
 
 	public T getGameItemByFilename(String absolutePath){
@@ -36,6 +40,14 @@ public class GameManager<T> {
 		else { return false;}
 	}
 
+	public static Set<String> getStringMapBasicFields(String[][] map){
+		Set<String> mapFields = new HashSet<>();
+		for (String[] strings : map) {
+			mapFields.addAll(Arrays.asList(strings));
+		}
+		return mapFields;
+	}
+
 	public static String[][] inputBattleMap(Gamer gamer, int sizeX, int sizeY) {
 		ArrayList<ArrayList<String>> resultArrayList = new ArrayList<>();
 		while (true) {
@@ -44,6 +56,9 @@ public class GameManager<T> {
 				resultArrayList.add(new ArrayList<>(Arrays.asList(line.split(" "))));
 			}
 			else {break;}
+		}
+		if (resultArrayList.isEmpty()) {
+			return null;
 		}
 		int firstLength = resultArrayList.getFirst().size();
 		if (firstLength != sizeX || resultArrayList.size() != sizeY) {

@@ -23,7 +23,8 @@ public class Bot {
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
 		ArrayList<String> choiceTypes = new ArrayList<>(unitsTyping.keySet());
-		for (int i = 0; i < 2 + difficulty + battleMap.getSizeX() / 8; i++) {
+		int botUnitsCount = (int) (battleMap.getSizeX() * (0.5f + (float)difficulty / 15f));
+		for (int i = 0; i < botUnitsCount; i++) {
 			unitNameCounter = 1;
 			randomType = random.nextInt(choiceTypes.size());
 			choiceUnit = random.nextInt(unitsTyping.get(choiceTypes.get(randomType)).size());

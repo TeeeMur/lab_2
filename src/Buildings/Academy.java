@@ -2,10 +2,11 @@ package Buildings;
 
 import GameSubjects.Game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Academy implements Buildable{
+public class Academy implements Buildable, Serializable {
 	public static final String NAME = "Академия";
 	private int level;
 	private final int maxLevel;
@@ -17,16 +18,16 @@ public class Academy implements Buildable{
 				put(Game.BUILDING_COST_STRING, 0);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 800);
-				put(Game.BUILDING_COST_STRING, 1);
+				put(Game.BUILDING_UPPER_STRING, 1);
+				put(Game.BUILDING_COST_STRING, 800);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 1500);
-				put(Game.BUILDING_COST_STRING, 2);
+				put(Game.BUILDING_UPPER_STRING, 2);
+				put(Game.BUILDING_COST_STRING, 1500);
 			}});
 			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 2400);
-				put(Game.BUILDING_COST_STRING, 3);
+				put(Game.BUILDING_UPPER_STRING, 3);
+				put(Game.BUILDING_COST_STRING, 2400);
 			}});
 		}};
 
