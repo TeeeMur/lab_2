@@ -16,7 +16,7 @@ public class GameManager<T> {
 		return true;
 	}
 
-	public boolean checkDirectory(String absolutePath) {
+	public boolean checkIsDirectory(String absolutePath) {
 		File file = new File(absolutePath);
 		return file.isDirectory();
 	}

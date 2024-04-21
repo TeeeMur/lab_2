@@ -122,7 +122,7 @@ public class GameBattleEditorGUI {
 		String inputAnswer = gamer.input();
 		if (!inputAnswer.toLowerCase().split(" ")[0].equals("нет")) {
 			GameManager<BattleMap> gameManager = new GameManager<>();
-			while (!gameManager.checkDirectory(inputAnswer)) {
+			while (!gameManager.checkIsDirectory(inputAnswer)) {
 				System.out.println("Это не директория! Введи путь к ней!");
 				inputAnswer = gamer.input();
 			}

@@ -363,7 +363,7 @@ public class GameInterface {
 				String inputAnswer = gamer.input();
 				if (!inputAnswer.toLowerCase().split(" ")[0].equals("нет")) {
 					GameManager<Game> gameManager = new GameManager<>();
-					while (!gameManager.checkDirectory(inputAnswer) && !inputAnswer.equals("нет")) {
+					while (!gameManager.checkIsDirectory(inputAnswer) && !inputAnswer.equals("нет")) {
 						System.out.println("Это не директория! Введи путь к ней или введи \"нет\", если передумал!");
 						inputAnswer = gamer.input();
 					}
