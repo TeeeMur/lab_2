@@ -77,7 +77,7 @@ public class GameBattleInterface {
 				"""
 				Я тебе отвечу, сколько у тебя осталось денег, ты сможешь далее покупать героев, пока у тебя остаются средства на них;
 				Также можешь написать Да, тогда процесс покупки закончится; нет - тогда процесс покупки начнется заново;
-				Помни, что ты не можешь взять больше\s""" + gameBattle.getBattleMap().getMaxUnitsOnLine() + """
+				Помни, что ты не можешь взять больше\s""" + gameBattle.getBattleMap().getMaxUnitsOnLine() + " " + """
 				юнитов в этой битве!""";
 		System.out.println(writeAndAnswerChoiceString);
 		while (true) {
