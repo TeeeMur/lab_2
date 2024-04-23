@@ -234,7 +234,7 @@ public class GameInterface {
 					swapResourcesAbility = true;
 				}
 				if (game.getBuildings().containsKey(Academy.NAME)) {
-					if (!game.getAcademyUnits().isEmpty()) {
+					if (!game.academyUnitsIsEmpty()) {
 						System.out.println("Вот твои юниты:");
 						printAcademyUnits();
 					}

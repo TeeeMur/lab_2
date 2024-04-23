@@ -142,6 +142,15 @@ public class Game implements Serializable {
 		return res;
 	}
 
+	public boolean academyUnitsIsEmpty() {
+		for (String type : academyUnits.keySet()) {
+			if (!academyUnits.get(type).isEmpty()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static int calculateUnitCost(int health, int attack, int attackDistance, int defense, int move) {
 		return health + attack + attackDistance + defense + move + 12;
 	}
