@@ -8,9 +8,11 @@ import java.util.*;
 public class GameManager<T> {
 	public boolean saveGameItemToDirectory(T gameItem, String absolutePath) {
 		try {
-			ObjectOutputStream fileByDirectory = new ObjectOutputStream(new FileOutputStream(absolutePath));
+			FileOutputStream fis = new FileOutputStream(absolutePath);
+			ObjectOutputStream fileByDirectory = new ObjectOutputStream(fis);
 			fileByDirectory.writeObject(gameItem);
 			fileByDirectory.close();
+			fis.close();
 		} catch (IOException e) {
 			return false;
 		}
@@ -29,6 +31,7 @@ public class GameManager<T> {
 			@SuppressWarnings("unchecked")
 			T gameItem = (T) (inputStream.readObject());
 			inputStream.close();
+			fileByDirectory.close();
 			return gameItem;
 		} catch (ClassCastException | IOException | ClassNotFoundException ex) {
 			return null;
