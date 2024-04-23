@@ -1,5 +1,6 @@
 package GameSubjects;
 
+import BattlePlace.BattleMap;
 import Buildings.*;
 
 import java.io.Serializable;
@@ -46,12 +47,20 @@ public class Game implements Serializable {
 		academyUnits.get(type).put(name, specs);
 	}
 
-	public void deleteUnit(String type, String name, ArrayList<Integer> specs) {
-		if (academyUnits.size() == 3 || specs.size() != 6 || !academyUnits.containsKey(type)
-		|| !academyUnits.get(type).containsKey(name)) {
+	public void deleteUnit(String name) {
+		boolean found = false;
+		String unitType = "";
+		for (String type : academyUnits.keySet()) {
+			if (academyUnits.get(type).containsKey(name)) {
+				found = true;
+				unitType = type;
+				break;
+			}
+		}
+		if (academyUnits.isEmpty() || !found) {
 			return;
 		}
-		academyUnits.get(type).remove(name);
+		academyUnits.get(unitType).remove(name);
 	}
 
 	public HashMap<String, HashMap<String, ArrayList<Integer>>> getAcademyUnits() {
@@ -76,6 +85,16 @@ public class Game implements Serializable {
 	}
 
 	public HashMap<String, String> getMapPaths() {
+		GameManager<BattleMap> gameManager = new GameManager<>();
+		ArrayList<String> mapPathsToDelete = new ArrayList<>();
+		for (String mapPathName: mapPaths.keySet()) {
+			if (gameManager.getGameItemByFilename(mapPaths.get(mapPathName)) == null) {
+				mapPathsToDelete.add(mapPathName);
+			}
+		}
+		for (String mapPathName: mapPathsToDelete) {
+			mapPaths.remove(mapPathName);
+		}
 		return mapPaths;
 	}
 

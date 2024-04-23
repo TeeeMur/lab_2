@@ -6,14 +6,10 @@ import java.util.ArrayList;
 
 public class InputChecker {
 
-	private static final ArrayList<String> answerCheckList = new ArrayList<>() {{
+	public static final ArrayList<String> ANSWER_CHECK_LIST = new ArrayList<>() {{
 			add("да");
 			add("нет");
 		}};
-
-	public static ArrayList<String> getAnswerCheckList() {
-		return answerCheckList;
-	}
 
 	public static boolean isNotNumeric(String str) {
 		try {

@@ -17,7 +17,6 @@ public class GameBattleInterface {
 	public static final String ANSI_GREEN = "\u001B[32m";
 	public static final String ANSI_RED = "\u001B[31m";
 	public static final String ANSI_BLUE = "\u001B[34m";
-	public static final String ANSI_CYAN = "\u001B[36m";
 	private final String colorUnitStateFormat = ANSI_YELLOW + ANSI_RESET + ANSI_YELLOW + ANSI_RESET + ANSI_GREEN + ANSI_RESET + ANSI_BLUE + ANSI_RESET + ANSI_RED + ANSI_RESET;
 	GameBattle gameBattle;
 	Gamer gamer;
@@ -59,7 +58,7 @@ public class GameBattleInterface {
 	}
 
 	public void fillGamerUnitsArray() {
-		String prePrintGamerUnitsArrayChoice = "Для покупки у тебя есть на выбор 9 бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:";
+		String prePrintGamerUnitsArrayChoice = "Для покупки у тебя есть на выбор " + gameBattle.getUnitsSpecsMap().size() + " бойцов, внимательно изучи их характеристики и выбери, кого и сколько ты купишь:";
 		ArrayList<String> purchaseStringList;
 		int sum = 0, purchaseUnitCount, unitsCount = 0;
 		boolean answ;
@@ -77,7 +76,9 @@ public class GameBattleInterface {
 		String writeAndAnswerChoiceString = writeYourChoiceString + "\n" +
 				"""
 				Я тебе отвечу, сколько у тебя осталось денег, ты сможешь далее покупать героев, пока у тебя остаются средства на них;
-				Также можешь написать Да, тогда процесс покупки закончится; нет - тогда процесс покупки начнется заново""";
+				Также можешь написать Да, тогда процесс покупки закончится; нет - тогда процесс покупки начнется заново;
+				Помни, что ты не можешь взять больше\s""" + gameBattle.getBattleMap().getMaxUnitsOnLine() + """
+				юнитов в этой битве!""";
 		System.out.println(writeAndAnswerChoiceString);
 		while (true) {
 			answ = false;
@@ -109,7 +110,7 @@ public class GameBattleInterface {
 						purchaseStringList.add(gamer.input().split(" ")[0]);
 						break;
 					}
-					if (InputChecker.getAnswerCheckList().contains(purchaseStringList.getFirst())) {
+					if (ANSWER_CHECK_LIST.contains(purchaseStringList.getFirst())) {
 						answ = true;
 					}
 					break;
@@ -122,10 +123,7 @@ public class GameBattleInterface {
 					hasPurchasedStringMap.clear();
 					sum = 0;
 					unitsCount = 0;
-					System.out.println("Набор юнитов начинается заново!");
-					System.out.println(prePrintGamerUnitsArrayChoice);
-					printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
-					System.out.println(writeYourChoiceString);
+					printChoiceUnitsAgain(prePrintGamerUnitsArrayChoice, writeYourChoiceString);
 					continue;
 				} else if (Objects.equals(purchaseStringList.getFirst(), "да")) {
 					if (hasPurchasedStringMap.isEmpty()) {
@@ -166,14 +164,17 @@ public class GameBattleInterface {
 				System.out.println(writeYourChoiceString);
 				continue;
 			}
-			if (gameBattle.getWallet() - sum < min(unitsLowerNamePrices.values())) {
-				System.out.println("У тебя осталось недостаточно денег для покупки героев.");
+			if (gameBattle.getWallet() - sum < min(unitsLowerNamePrices.values()) ||
+			unitsCount == gameBattle.getBattleMap().getMaxUnitsOnLine()) {
+				if (gameBattle.getWallet() - sum < min(unitsLowerNamePrices.values())) {
+					System.out.println("У тебя осталось недостаточно денег для покупки героев.");
+				}
 				System.out.println("Итого твой выбор:");
 				for (String unitName : hasPurchasedStringMap.keySet()) {
 					System.out.println(unitName + ": " + hasPurchasedStringMap.get(unitName));
 				}
 				System.out.println("Покупаем такой набор? Напиши Да или Нет:");
-				String purchaseConfirmation = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], InputChecker.getAnswerCheckList());
+				String purchaseConfirmation = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], ANSWER_CHECK_LIST);
 				if (Objects.equals(purchaseConfirmation, "да")) {
 					gameBattle.setGamerUnits(hasPurchasedStringMap);
 					System.out.println("Твой набор героев:");
@@ -186,13 +187,17 @@ public class GameBattleInterface {
 					hasPurchasedStringMap.clear();
 					sum = 0;
 					unitsCount = 0;
-					System.out.println("Набор юнитов начинается заново!");
-					System.out.println(prePrintGamerUnitsArrayChoice);
-					printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
-					System.out.println(writeYourChoiceString);
+					printChoiceUnitsAgain(prePrintGamerUnitsArrayChoice, writeYourChoiceString);
 				}
 			}
 		}
+	}
+
+	private void printChoiceUnitsAgain(String prePrintUnitsArrayChoice, String writeYourChoiceString) {
+		System.out.println("Набор юнитов начинается заново!");
+		System.out.println(prePrintUnitsArrayChoice);
+		printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
+		System.out.println(writeYourChoiceString);
 	}
 
 	public static void printUnitsArray(HashMap<String, HashMap<String, Float>> unitTypesPenalties,
@@ -486,7 +491,7 @@ public class GameBattleInterface {
 				else if (attackableUnitsList.size() == 1) {
 					System.out.println("Атаковать можешь только одного: " + attackableUnitsList.getFirst().getMapImage() +
 							") " + attackableUnitsList.getFirst().getName() + "\nАтакуешь? Напиши да/нет");
-					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], InputChecker.getAnswerCheckList());
+					inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], ANSWER_CHECK_LIST);
 					if (Objects.equals(inputAnswer, "да")) {
 						kill = gameBattle.makeAttack(false, inputHero, attackableUnitsList.getFirst().getMapImage());
 						if (kill) {

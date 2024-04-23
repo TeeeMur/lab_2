@@ -19,7 +19,7 @@ public class GameBattleEditorGUI {
 		this.gamer = gamer;
 	}
 
-	public void createBattleMap() {
+	public String createBattleMap() {
 		String mapSizesConstraintString = "Высота и ширина карты не могут быть меньше " + BattleMap.getMinSizeX() +
 				" или больше " + BattleMap.getMaxSizeX();
 		System.out.println("Для того, чтобы создать новую карту, тебе нужно ввести размер - ширину и высоту карты.");
@@ -140,10 +140,13 @@ public class GameBattleEditorGUI {
 			if (saveResult) {
 				System.out.println("Твоя игра сохранена!");
 				System.out.println("Путь к твоей карте: " + absolutePathSave);
+				return absolutePathSave;
 			} else {
 				System.out.println("Что-то пошло не так и твоя карта не сохранилась...");
+				return "";
 			}
 		}
+		return "";
 	}
 
 	private void printBattleMapExample(int sizeX, int sizeY) {

@@ -8,6 +8,7 @@ import GameSubjects.GameManager;
 import Gamers.Gamer;
 import java.util.*;
 
+import static GameInterfaces.InputChecker.ANSWER_CHECK_LIST;
 import static GameInterfaces.InputChecker.checkAnswer;
 
 public class GameInterface {
@@ -164,6 +165,45 @@ public class GameInterface {
 		}
 	}
 
+	private void saveMapPathByGamer(String mapPath){
+		System.out.print("Хочешь сохранить путь к карте на твоем аккаунте?" +
+				"\nНапиши да или нет:");
+		String answer = checkAnswer(gamer, gamer.input().split(" ")[0], ANSWER_CHECK_LIST);
+		if (answer.equals("да")) {
+			System.out.println("Введи имя карты:");
+			String mapPathName = gamer.input().split(" ")[0];
+			game.addMapPath(mapPathName, mapPath);
+			System.out.println("Твоя карта " + mapPathName + "(" + mapPath + ") сохранена!");
+		}
+	}
+
+	private void deleteMapPathByGamer() {
+		if (game.getMapPaths().isEmpty()) {
+			return;
+		}
+		System.out.println("Хочешь удалить какой-либо путь из твоего списка?" +
+				"\nНапиши да или нет:");
+		String answerToDelete = checkAnswer(gamer, gamer.input().split(" ")[0], ANSWER_CHECK_LIST);
+		if (Objects.equals(answerToDelete, "да")) {
+			String answerMapPathName;
+			do {
+				System.out.println("Введи имя пути своей карты (введи нет, если хочешь прекратить удаление карт):");
+				answerMapPathName = checkAnswer(gamer, gamer.input().split(" ")[0], ANSWER_CHECK_LIST);
+				if (Objects.equals(answerMapPathName, "нет")) {
+					return;
+				}
+				if (game.getMapPaths().containsKey(answerMapPathName)) {
+					game.removeMapPath(answerMapPathName);
+				} else {
+					System.out.println("Ты, похоже, ввел имя пути с ошибкой!");
+				}
+				if (game.getMapPaths().isEmpty()) {
+					System.out.println("Похоже, ты удалил все свои пути для карт...");
+				}
+			} while (true);
+		}
+	}
+
 	public void choiceView() {
 		String buildingUpgradeAbilityString = "";
 		String addUnitsAbilityString = "";
@@ -222,34 +262,49 @@ public class GameInterface {
 					gameBattle = new GameBattle(diff);
 				} else {
 					HashMap<String, String> mapPaths = game.getMapPaths();
-					System.out.println("Вот твои сохраненные на этом аккаунте карты(не факт, что они все еще существуют...):");
-					for (String pathName: mapPaths.keySet()) {
-						System.out.println(pathName + ": " + mapPaths.get(pathName));
+					String getMapByName = "";
+					if (!mapPaths.isEmpty()) {
+						System.out.println("Вот твои сохраненные на этом аккаунте карты(не факт, что они все еще существуют...):");
+						for (String pathName : mapPaths.keySet()) {
+							System.out.println(pathName + ": " + mapPaths.get(pathName));
+						}
+						getMapByName = " или имя твоей карты в списке выше";
+						deleteMapPathByGamer();
 					}
-					System.out.println("Введи имя пути к твоей карте из списка выше (или можешь ввести новый путь):");
-					String mapPath = gamer.input();
-					if (mapPaths.containsKey(mapPath)) {
-						mapPath = mapPaths.get(mapPath);
+					System.out.println("Введи путь к твоей карте" + getMapByName + " (введи да, если хочешь создать новую карту):");
+					String mapAnswerPath = gamer.input();
+					if (Objects.equals(mapAnswerPath, "да")) {
+						GameBattleEditorGUI gameBattleEditorGUI = new GameBattleEditorGUI(gamer);
+						gameBattleEditorGUI.createBattleMap();
+					}
+					if (mapPaths.containsKey(mapAnswerPath)) {
+						mapAnswerPath = mapPaths.get(mapAnswerPath);
 					}
 					GameManager<BattleMap> gameManager = new GameManager<>();
-					BattleMap battleMap = gameManager.getGameItemByFilename(mapPath);
+					BattleMap battleMap = gameManager.getGameItemByFilename(mapAnswerPath);
 					while (battleMap == null) {
 						System.out.print("""
-								Ты ввел неправильный путь!
-								Если хочешь вернуться к меню, введи "нет", иначе - введи путь к карте:""");
-						mapPath = gamer.input();
-						if (mapPaths.containsKey(mapPath)) {
-							mapPath = mapPaths.get(mapPath);
-						}
-						if (mapPath.equalsIgnoreCase("нет")) {
+								Выбери карту заново!
+								Если хочешь вернуться к меню, введи "нет", иначе - введи путь к карте (введи да, если хочешь создать новую карту):""");
+						mapAnswerPath = gamer.input();
+						if (mapPaths.containsKey(mapAnswerPath)) {
+							mapAnswerPath = mapPaths.get(mapAnswerPath);
+						} else if (Objects.equals(mapAnswerPath, "да")) {
+							GameBattleEditorGUI gameBattleEditorGUI = new GameBattleEditorGUI(gamer);
+							mapAnswerPath = gameBattleEditorGUI.createBattleMap();
+							if (mapAnswerPath.isEmpty()) {
+								continue;
+							}
+						} else if (mapAnswerPath.equalsIgnoreCase("нет")) {
 							toHome = true;
 							break;
 						}
-						battleMap = gameManager.getGameItemByFilename(mapPath);
+						battleMap = gameManager.getGameItemByFilename(mapAnswerPath);
 					}
 					if (toHome) {
 						continue;
 					}
+					saveMapPathByGamer(mapAnswerPath);
 					HashMap<String, Buildable> buildableHashMap = game.getBuildings();
 					gameBattle = new GameBattle(diff,
 							buildableHashMap.get(Building.HEALER.getName()).getBuildingUpper(),
@@ -269,6 +324,9 @@ public class GameInterface {
 				for (String resourceType: gameBattleAcquiredResources.keySet()) {
 					System.out.println(resourceType + ": " + gameBattleAcquiredResources.get(resourceType));
 				}
+				System.out.println("Итого твои ресурсы:");
+				printResources();
+
 			}
 			else if (answer == 2) {
 				boolean spendAbility = false;
@@ -453,7 +511,7 @@ public class GameInterface {
 					}
 					else if (addUnitsAbility){
 						int maxAcademyUnitsCapacity = game.getBuildings().get(Academy.NAME).getBuildingUpper();
-						System.out.println("Ты хочешь добавить новых юнитов??");
+						System.out.println("Ты зашел в академию!");
 						if (game.getAcademyUnits().isEmpty()) {
 							System.out.println("Твоя академия пока пуста.");
 						} else {
@@ -462,13 +520,23 @@ public class GameInterface {
 							if (game.getAcademyUnits().size() == maxAcademyUnitsCapacity) {
 								System.out.println("Ты больше юнитов не можешь добавить!");
 								System.out.println("Если хочешь кого-то удалить, введи \"да\", иначе - \"нет\"");
-								String inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], InputChecker.getAnswerCheckList());
+								String inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], ANSWER_CHECK_LIST);
 								if (Objects.equals(inputAnswer, "да")) {
-									System.out.println("Введи имя героя, которого хочешь удалить:");
+									System.out.print("Введи имя героя, которого хочешь удалить(введи \"нет\", если передумал:");
+									ArrayList<String> choiceList = new ArrayList<>(game.getAcademyUnits().keySet());
+									choiceList.add("нет");
+									inputAnswer = checkAnswer(gamer, gamer.input().toLowerCase().split(" ")[0], choiceList);
+									if (Objects.equals(inputAnswer, "нет")) {
+										continue;
+									}
+									else {
+										game.deleteUnit(inputAnswer);
+										System.out.println("Твой герой " + inputAnswer + " был успешно удален из Академии!");
+									}
 								}
 							}
 						}
-						System.out.println("Введи номер типа юнита:");
+						System.out.println("Введи номер типа героя:");
 						for (int i = 0; i < GameBattle.getUnitsTypes().size(); i++) {
 							System.out.println(i + ": " + GameBattle.getUnitsTypes().get(i));
 						}
