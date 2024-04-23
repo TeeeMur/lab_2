@@ -1,12 +1,10 @@
 package Buildings;
 
 import GameSubjects.Game;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Hotel implements Buildable, Serializable {
+public class Hotel implements Buildable {
 	public static final String NAME = "Отель";
 	private int level;
 	private final int maxLevel;

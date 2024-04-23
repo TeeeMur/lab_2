@@ -1,13 +1,11 @@
 package Buildings;
 
 import GameSubjects.Game;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class Tavern implements Buildable, Serializable {
+public class Tavern implements Buildable {
 	public static final String PENALTY_TYPE = "PENALTY";
 	public static final String MOVE_TYPE = "MOVE";
 	public static final String NAME = "Таверна";

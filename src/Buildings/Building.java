@@ -1,13 +1,11 @@
 package Buildings;
 
 import GameSubjects.Game;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public enum Building implements Buildable, Serializable {
+public enum Building implements Buildable {
 
 	HEALER ("Лекарь",
 			new ArrayList<>(Arrays.asList(0, 100, 350, 750, 1000)),

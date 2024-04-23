@@ -10,6 +10,7 @@ public class GameManager<T> {
 		try {
 			ObjectOutputStream fileByDirectory = new ObjectOutputStream(new FileOutputStream(absolutePath));
 			fileByDirectory.writeObject(gameItem);
+			fileByDirectory.close();
 		} catch (IOException e) {
 			return false;
 		}
@@ -24,20 +25,14 @@ public class GameManager<T> {
 	public T getGameItemByFilename(String absolutePath){
 		try {
 			FileInputStream fileByDirectory = new FileInputStream(absolutePath);
+			ObjectInputStream inputStream = new ObjectInputStream(fileByDirectory);
 			@SuppressWarnings("unchecked")
-			T gameItem = (T) (new ObjectInputStream(fileByDirectory).readObject());
+			T gameItem = (T) (inputStream.readObject());
+			inputStream.close();
 			return gameItem;
 		} catch (ClassCastException | IOException | ClassNotFoundException ex) {
 			return null;
 		}
-	}
-
-	public boolean deleteGameBattleByName(String absolutePath){
-		File mapFile = new File(absolutePath);
-		if (mapFile.exists() && mapFile.isFile()) {
-			return mapFile.delete();
-		}
-		else { return false;}
 	}
 
 	public static Set<String> getStringMapBasicFields(String[][] map){

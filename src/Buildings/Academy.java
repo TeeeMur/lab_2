@@ -1,12 +1,10 @@
 package Buildings;
 
 import GameSubjects.Game;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Academy implements Buildable, Serializable {
+public class Academy implements Buildable {
 	public static final String NAME = "Академия";
 	private int level;
 	private final int maxLevel;
