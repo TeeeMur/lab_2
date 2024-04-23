@@ -151,12 +151,19 @@ public class GameInterface {
 		int VILLAGE_WIDTH = 3;
 		int preLines = game.getBuildings().size() / VILLAGE_WIDTH;
 		for (int i = 0; i < preLines; i++) {
-			for (int j = 0; j < VILLAGE_WIDTH; j++) {
-				for (int k = 0; k < maxHeight; k++) {
-					System.out.println(buildingImages.get(i * VILLAGE_WIDTH + j).get(k));
+			for (int k = 0; k < maxHeight; k++) {
+				for (int j = 0; j < VILLAGE_WIDTH; j++) {
+					System.out.print(buildingImages.get(i * VILLAGE_WIDTH + j).get(k));
 				}
+				System.out.println();
 			}
 		}
+		for (int k = 0; k < maxHeight; k++) {
+				for (int j = 0; j < game.getBuildings().size() % VILLAGE_WIDTH; j++) {
+					System.out.print(buildingImages.get(preLines * VILLAGE_WIDTH + j).get(k));
+				}
+				System.out.println();
+			}
 	}
 
 	private void printResources() {
