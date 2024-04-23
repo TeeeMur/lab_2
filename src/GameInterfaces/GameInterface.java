@@ -305,7 +305,7 @@ public class GameInterface {
 						continue;
 					}
 					saveMapPathByGamer(mapAnswerPath);
-					HashMap<String, Buildable> buildableHashMap = game.getBuildings();
+					HashMap<String, Buildable> buildableHashMap = game.getDefaultBuildings();
 					gameBattle = new GameBattle(diff,
 							buildableHashMap.get(Building.HEALER.getName()).getBuildingUpper(),
 							buildableHashMap.get(Building.BLACKSMITH_HOUSE.getName()).getBuildingUpper(),
@@ -330,12 +330,12 @@ public class GameInterface {
 			}
 			else if (answer == 2) {
 				boolean spendAbility = false;
-				HashMap<String, Buildable> buildingsHashMap = game.getBuildings();
+				HashMap<String, Buildable> buildingsHashMap = game.getDefaultBuildings();
 				ArrayList<String> spendableBuildings = new ArrayList<>();
 				System.out.println("Вот твои ресурсы:");
 				printResources();
 				System.out.println("Вот цены на покупку/улучшение зданий:");
-				for (String buildingName: game.getBuildings().keySet()) {
+				for (String buildingName: game.getDefaultBuildings().keySet()) {
 					Buildable building = buildingsHashMap.get(buildingName);
 					String costType = building.getCostType();
 					String costTypeString = "";
@@ -593,7 +593,7 @@ public class GameInterface {
 								param = gamer.input().split(" ")[0];
 							}
 						}
-						int unitCost = Game.calculateCost(paramsList.get(0),
+						int unitCost = Game.calculateUnitCost(paramsList.get(0),
 								paramsList.get(1),
 								paramsList.get(2),
 								paramsList.get(3),

@@ -99,6 +99,16 @@ public class Game implements Serializable {
 	}
 
 	public HashMap<String, Buildable> getBuildings() {
+		HashMap<String, Buildable> returnBuildings = new HashMap<>();
+		for (String buildingName: buildings.keySet()) {
+			if (buildings.get(buildingName).getLevel() != 0) {
+				returnBuildings.put(buildingName, buildings.get(buildingName));
+			}
+		}
+		return returnBuildings;
+	}
+
+	public HashMap<String, Buildable> getDefaultBuildings() {
 		return buildings;
 	}
 
@@ -132,7 +142,7 @@ public class Game implements Serializable {
 		return res;
 	}
 
-	public static int calculateCost(int health, int attack, int attackDistance, int defense, int move) {
+	public static int calculateUnitCost(int health, int attack, int attackDistance, int defense, int move) {
 		return health + attack + attackDistance + defense + move + 12;
 	}
 
