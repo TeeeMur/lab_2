@@ -159,11 +159,11 @@ public class GameInterface {
 			}
 		}
 		for (int k = 0; k < maxHeight; k++) {
-				for (int j = 0; j < game.getBuildings().size() % VILLAGE_WIDTH; j++) {
-					System.out.print(buildingImages.get(preLines * VILLAGE_WIDTH + j).get(k));
-				}
-				System.out.println();
+			for (int j = 0; j < game.getBuildings().size() % VILLAGE_WIDTH; j++) {
+				System.out.print(buildingImages.get(preLines * VILLAGE_WIDTH + j).get(k));
 			}
+			System.out.println();
+		}
 	}
 
 	private void printResources() {
@@ -229,11 +229,11 @@ public class GameInterface {
 				System.out.println("Вот твоя деревня:");
 				printVillage();
 				buildingUpgradeAbilityString = " или улучшить старое";
-				if (game.getBuildings().get(Market.NAME).getLevel() != 0) {
+				if (game.getBuildings().containsKey(Market.NAME)) {
 					swapResourcesAbilityString = "поменять ресурсы - " + (++actionOrder) + ", ";
 					swapResourcesAbility = true;
 				}
-				if (game.getBuildings().get(Academy.NAME).getLevel() != 0) {
+				if (game.getBuildings().containsKey(Academy.NAME)) {
 					if (!game.getAcademyUnits().isEmpty()) {
 						System.out.println("Вот твои юниты:");
 						printAcademyUnits();
