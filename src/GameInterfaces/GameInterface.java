@@ -101,7 +101,7 @@ public class GameInterface {
 		}
 		String finalLevelString = levelString;
 		return switch (level) {
-			case (1) -> new ArrayList<>() {{
+			case (2) -> new ArrayList<>() {{
 				add("      []_______     ");
 				add("     /\\" + houseName + "\\    ");
 				add(" ___/" + finalLevelString + "\\__/\\____\\__ ");
@@ -109,9 +109,9 @@ public class GameInterface {
 				add("||'''| |''||''''|''|");
 				add("\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"");
 			}};
-			case (2) -> new ArrayList<>() {{
+			case (3) -> new ArrayList<>() {{
 				add("    ________________   ");
-				add("   /    " + houseName + "  " + finalLevelString + "\\  ");
+				add("   /  " + houseName + "  " + finalLevelString + "  \\  ");
 				add("  /__________________\\ ");
 				add("   ||  || /--\\ ||  ||  ");
 				add("   ||[]|| | .| ||[]||  ");
@@ -158,11 +158,13 @@ public class GameInterface {
 				System.out.println();
 			}
 		}
-		for (int k = 0; k < maxHeight; k++) {
-			for (int j = 0; j < game.getBuildings().size() % VILLAGE_WIDTH; j++) {
-				System.out.print(buildingImages.get(preLines * VILLAGE_WIDTH + j).get(k));
+		if (game.getBuildings().size() % VILLAGE_WIDTH != 0) {
+			for (int k = 0; k < maxHeight; k++) {
+				for (int j = 0; j < game.getBuildings().size() % VILLAGE_WIDTH; j++) {
+					System.out.print(buildingImages.get(preLines * VILLAGE_WIDTH + j).get(k));
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 	}
 
