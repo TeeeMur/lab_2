@@ -64,7 +64,7 @@ public class GameBattleEditorGUI {
 			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть только 4:");
 			obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
 			while (obstacles.size() != 4) {
-				System.out.println("Ты НЕ 4 препятствия!");
+				System.out.println("Ты ввел НЕ 4 препятствия!");
 			}
 			System.out.println("Для каждого типа юнитов введи штрафы за передвижение по препятствиям:");
 			for (String unitType: GameBattle.getUnitsTypes()) {

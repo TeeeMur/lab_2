@@ -14,11 +14,13 @@ public class Game implements Serializable {
 	public static final String ELIXIR = "Эликсир";
 	public static final String BUILDING_UPPER_STRING = "upper";
 	public static final String BUILDING_COST_STRING = "cost";
+	Date dateOfCreation;
+	Date dateOfLastSession;
 
 	private final HashMap<String, Buildable> buildings = new HashMap<>() {{
-		put(Building.HEALER.getName(), Building.HEALER);
-		put(Building.BLACKSMITH_HOUSE.getName(), Building.BLACKSMITH_HOUSE);
-		put(Building.ARSENAL.getName(), Building.ARSENAL);
+		put(Healer.NAME, new Healer());
+		put(BlacksmithHouse.NAME, new BlacksmithHouse());
+		put(Arsenal.NAME, new Arsenal());
 		put(Academy.NAME, new Academy());
 		put(Hotel.NAME, new Hotel());
 		put(Market.NAME, new Market());
@@ -38,6 +40,8 @@ public class Game implements Serializable {
 				put(type, new HashMap<>());
 			}
 		}};
+		dateOfCreation = new Date();
+		dateOfLastSession = new Date();
 	}
 
 	public void addUnit(String type, String name, ArrayList<Integer> specs) {
@@ -142,17 +146,18 @@ public class Game implements Serializable {
 		return res;
 	}
 
-	public boolean academyUnitsIsEmpty() {
-		for (String type : academyUnits.keySet()) {
-			if (!academyUnits.get(type).isEmpty()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public static int calculateUnitCost(int health, int attack, int attackDistance, int defense, int move) {
 		return health + attack + attackDistance + defense + move + 12;
+	}
+
+	public void refreshResourcesFromHotel(int count, String type) {
+		if (resources.containsKey(type)) {
+			resources.put(type, resources.get(type) + count);
+		}
+	}
+
+	public Date getDateOfLastSession() {
+		return dateOfLastSession;
 	}
 
 }

@@ -31,7 +31,7 @@ public class Academy implements Buildable {
 
 	public Academy() {
 		this.level = 0;
-		this.maxLevel = upgrades.size();
+		this.maxLevel = upgrades.size() - 1;
 		this.costType = Game.ELIXIR;
 	}
 

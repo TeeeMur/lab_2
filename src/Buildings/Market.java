@@ -1,6 +1,7 @@
 package Buildings;
 
 import GameSubjects.Game;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,35 +12,35 @@ public class Market implements Buildable {
 	private final String costType;
 
 	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>() {{
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 100);
-				put(Game.BUILDING_COST_STRING, 0);
-			}});
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 25);
-				put(Game.BUILDING_COST_STRING, 100);
-			}});
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 20);
-				put(Game.BUILDING_COST_STRING, 300);
-			}});
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 12);
-				put(Game.BUILDING_COST_STRING, 650);
-			}});
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 8);
-				put(Game.BUILDING_COST_STRING, 1200);
-			}});
-			add(new HashMap<>() {{
-				put(Game.BUILDING_UPPER_STRING, 5);
-				put(Game.BUILDING_COST_STRING, 1400);
-			}});
-		}};
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 100);
+			put(Game.BUILDING_COST_STRING, 0);
+		}});
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 25);
+			put(Game.BUILDING_COST_STRING, 100);
+		}});
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 20);
+			put(Game.BUILDING_COST_STRING, 300);
+		}});
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 12);
+			put(Game.BUILDING_COST_STRING, 650);
+		}});
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 8);
+			put(Game.BUILDING_COST_STRING, 1200);
+		}});
+		add(new HashMap<>() {{
+			put(Game.BUILDING_UPPER_STRING, 5);
+			put(Game.BUILDING_COST_STRING, 1400);
+		}});
+	}};
 
 	public Market() {
 		this.level = 0;
-		this.maxLevel = upgrades.size();
+		this.maxLevel = upgrades.size() - 1;
 		this.costType = Game.GOLD;
 	}
 
@@ -79,13 +80,13 @@ public class Market implements Buildable {
 
 	@Override
 	public int getBuildingUpper() {
-		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
+		return upgrades.get(level).get(Game.BUILDING_UPPER_STRING);
 	}
 
 	@Override
 	@Deprecated
 	public int getBuildingUpper(String type) {
-		return upgrades.get(level).getOrDefault(Game.BUILDING_UPPER_STRING, 0);
+		return upgrades.get(level).get(Game.BUILDING_UPPER_STRING);
 	}
 
 	@Override
@@ -93,8 +94,7 @@ public class Market implements Buildable {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
-		}
-		else {
+		} else {
 			cost = 0;
 		}
 		return cost;
@@ -106,8 +106,7 @@ public class Market implements Buildable {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
-		}
-		else {
+		} else {
 			cost = 0;
 		}
 		return cost;

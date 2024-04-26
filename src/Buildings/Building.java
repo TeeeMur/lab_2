@@ -1,43 +1,31 @@
 package Buildings;
 
 import GameSubjects.Game;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
-public enum Building implements Buildable {
-
-	HEALER ("Лекарь",
-			new ArrayList<>(Arrays.asList(0, 100, 350, 750, 1000)),
-			new ArrayList<>(Arrays.asList(0, 6, 15, 18, 22)), Game.ELIXIR),
-	BLACKSMITH_HOUSE ("Кузница",
-			new ArrayList<>(Arrays.asList(0, 150, 400, 800, 1100)),
-			new ArrayList<>(Arrays.asList(0, 7, 12, 18, 24)), Game.GOLD),
-	ARSENAL ("Арсенал",
-			new ArrayList<>(Arrays.asList(0, 100, 300, 750, 1000)),
-			new ArrayList<>(Arrays.asList(0, 5, 12, 16, 20)), Game.GOLD);
+public abstract class Building implements Buildable {
 
 	private final String name;
 	private int level;
 	private final int maxLevel;
 	private final String costType;
 
-	private final ArrayList<HashMap<String, Integer>> upgrades;
+	private final ArrayList<HashMap<String, Integer>> upgrades = new ArrayList<>();
 
 	Building(String name, ArrayList<Integer> costs, ArrayList<Integer> uppers, String costType) {
 		this.costType = costType;
 		this.name = name;
 		this.level = 0;
-		this.maxLevel = uppers.size();
-		this.upgrades = new ArrayList<>() {{
-			for (int i = 0; i < uppers.size(); i++) {
-				int finalI = i;
-				add(new HashMap<>(){{
-					put(Game.BUILDING_UPPER_STRING, uppers.get(finalI));
-					put(Game.BUILDING_COST_STRING, costs.get(finalI));
-				}});
-			}
-		}};
+		this.maxLevel = uppers.size() - 1;
+		for (int i = 0; i < uppers.size(); i++) {
+			int finalI = i;
+			upgrades.add(new HashMap<>() {{
+				put(Game.BUILDING_UPPER_STRING, uppers.get(finalI));
+				put(Game.BUILDING_COST_STRING, costs.get(finalI));
+			}});
+		}
 	}
 
 	@Override
@@ -89,8 +77,7 @@ public enum Building implements Buildable {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
-		}
-		else {
+		} else {
 			cost = 0;
 		}
 		return cost;
@@ -102,8 +89,7 @@ public enum Building implements Buildable {
 		int cost;
 		if (level < maxLevel) {
 			cost = upgrades.get(level + 1).get(Game.BUILDING_COST_STRING);
-		}
-		else {
+		} else {
 			cost = 0;
 		}
 		return cost;

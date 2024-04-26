@@ -24,6 +24,10 @@ public class Bot {
 		String[] specNameSplit;
 		ArrayList<String> choiceTypes = new ArrayList<>(unitsTyping.keySet());
 		int botUnitsCount = (int) (battleMap.getSizeX() * (0.5f + (float)difficulty / 15f));
+		if (difficulty == 5) {
+			botUnitsCount--;
+			botUnitsCount--;
+		}
 		for (int i = 0; i < botUnitsCount; i++) {
 			unitNameCounter = 1;
 			randomType = random.nextInt(choiceTypes.size());
@@ -57,7 +61,7 @@ public class Bot {
 		}
 		if (botDifficulty == 5) {
 			int botUnitsArraySize = botUnitsArray.size();
-			for (int i = botUnitsArraySize; i < botUnitsArraySize + 1; i++) {
+			for (int i = botUnitsArraySize + 1; i < botUnitsArraySize + 2; i++) {
 				botUnitsArray.add(new Chernomor(((Integer)i).toString(), battleMap.getPenalties().get(GameBattle.getUnitsTypes().getFirst())));
 			}
 		}

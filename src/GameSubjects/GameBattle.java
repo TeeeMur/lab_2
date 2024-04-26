@@ -87,7 +87,7 @@ public class GameBattle {
 			unitsSpecsMap.get(unitName).set(0, (int)(unitsSpecsMap.get(unitName).getFirst() * (1f + (float)healthPercentUpper / 100f)));
 			unitsSpecsMap.get(unitName).set(1, (int)(unitsSpecsMap.get(unitName).get(1) * (1f + (float)attackPercentUpper / 100f)));
 			unitsSpecsMap.get(unitName).set(3, (int)(unitsSpecsMap.get(unitName).get(3) * (1f + (float)defensePercentUpper / 100f)));
-			unitsSpecsMap.get(unitName).set(4, (int)(unitsSpecsMap.get(unitName).get(4) * ((float)movePercentUpper / 100f)));
+			unitsSpecsMap.get(unitName).set(4, (int)(unitsSpecsMap.get(unitName).get(4) * (1 + (float)movePercentUpper / 100f)));
 		}
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}

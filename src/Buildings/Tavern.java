@@ -38,7 +38,7 @@ public class Tavern implements Buildable {
 		}};
 
 	public Tavern() {
-		maxLevel = upgrades.size();
+		maxLevel = upgrades.size() - 1;
 		costType = Game.ELIXIR;
 		moveLevel = 0;
 		penaltyLevel = 0;
@@ -112,7 +112,7 @@ public class Tavern implements Buildable {
 		else if (penaltyLevel < maxLevel){
 			return upgrades.get(penaltyLevel + 1).get(Game.BUILDING_COST_STRING);
 		}
-		return -1;
+		return 0;
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class Tavern implements Buildable {
 			return upgrades.get(moveLevel + 1).get(Game.BUILDING_COST_STRING);
 		}
 		else {
-			return -1;
+			return upgrades.get(penaltyLevel + 1).get(Game.BUILDING_COST_STRING);
 		}
 	}
 

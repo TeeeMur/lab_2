@@ -217,6 +217,9 @@ public class GameBattleInterface {
 			System.out.print(divider);
 			System.out.print(columnNames);
 			System.out.print(divider);
+			if (unitsTyping.get(unitsTypes.get(i)).isEmpty()) {
+				continue;
+			}
 			for (int j = 0; j < unitsTyping.get(unitsTypes.get(i)).size(); j++) {
 				tempSpecs[0] = iter++;
 				tempSpecs[1] = unitsTyping.get(unitsTypes.get(i)).get(j);
@@ -281,12 +284,12 @@ public class GameBattleInterface {
 			for (int i = 1; i < 10; i++) {
 				System.out.format("%d ", i);
 			}
-			for (int i = 10; i < columnsCount; i++) {
+			for (int i = 10; i < columnsCount + 1; i++) {
 				System.out.format("%d", i);
 			}
 		}
 		else {
-			for (int i = 1; i < columnsCount; i++) {
+			for (int i = 1; i < columnsCount + 1; i++) {
 				System.out.format("%d ", i);
 			}
 		}
