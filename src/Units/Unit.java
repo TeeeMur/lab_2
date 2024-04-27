@@ -42,9 +42,11 @@ public class Unit {
 	public String getMapImage() {
 		return mapImage;
 	}
+
 	public final String getName() {
 		return name;
 	}
+
 	public final int getCostPoints() {
 		return costPoints;
 	}
@@ -72,6 +74,7 @@ public class Unit {
 	public final int getxCoord() { return xCoord; }
 
 	public final int getyCoord() { return yCoord; }
+
 	public boolean checkDeath() {
 		return healthPoints <= 0;
 	}
