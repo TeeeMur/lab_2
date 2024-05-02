@@ -42,8 +42,12 @@ public class GameInterface {
 
 	public String startGame() {
 		System.out.println("Привет!");
-		System.out.print("Хочешь загрузиться с сохраненного файла - введи 1, начать новую игру - введи 2, " +
-				"\nсоздать новую карту c новыми полями - введи 3, выйти из программы - 4:");
+		System.out.println("""
+				Введи:
+				1 - загрузиться с сохраненного файла
+				2 - начать новую игру
+				3 - создать новую карту с новыми полями
+				Любой другой символ или последовательность символов - выйти из игры""");
 		int choice = Integer.parseInt(checkAnswer(gamer, gamer.inputOneWord(), new ArrayList<>(Arrays.asList("1", "2", "3", "4"))));
 		return switch (choice) {
 			case (1) -> CHOICE_DOWNLOAD;
@@ -484,6 +488,9 @@ public class GameInterface {
 		ArrayList<String> answerList = new ArrayList<>(resourcesAbleToChange.stream().map(String::toLowerCase).toList());
 		answerList.add("нет");
 		String inputFirstResource = checkAnswer(gamer, gamer.inputOneWord(), answerList);
+		if (Objects.equals(inputFirstResource, "нет")) {
+			return;
+		}
 		System.out.println("На что хочешь обменять?");
 		String inputSecondResource = checkAnswer(gamer, gamer.inputOneWord(), answerList);
 		if (!Objects.equals(inputFirstResource, "нет") && Objects.equals(inputFirstResource, inputSecondResource)) {

@@ -13,7 +13,7 @@ public class InputChecker {
 
 	public static boolean isNotNumeric(String str) {
 		try {
-			Integer.parseInt(str);
+			Float.parseFloat(str);
 			return false;
 		} catch (NumberFormatException e) {
 			return true;

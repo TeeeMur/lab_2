@@ -21,7 +21,7 @@ public class GameBattleEditorGUI {
 
 	public String createBattleMap() {
 		String mapSizesConstraintString = "Высота и ширина карты не могут быть меньше " + BattleMap.getMinSizeX() +
-				" или больше " + BattleMap.getMaxSizeX();
+				" или больше " + BattleMap.getMaxSizeX() + "!";
 		System.out.println("Для того, чтобы создать новую карту, тебе нужно ввести размер - ширину и высоту карты.");
 		System.out.println(mapSizesConstraintString);
 		System.out.print("Введи числами X (ширину) и Y (высоту) карты:");
@@ -51,7 +51,10 @@ public class GameBattleEditorGUI {
 		for (String field: BattleMap.getDefaultFields()) {
 			System.out.println(field);
 		}
-		System.out.print("Хочешь их выбрать или поставишь свои? Выберешь по умолчанию - введи 1, свои - введи 2:");
+		System.out.println("""
+				Хочешь их выбрать или поставишь свои? Введи:
+				1 - выбор препятствий по умолчанию
+				2 - выбор своих препятствий""");
 		answer =  Integer.parseInt(checkAnswer(gamer, gamer.input().split(" ")[0], new ArrayList<>(Arrays.asList("1", "2"))));
 		HashMap<String, HashMap<String, Float>> inputUnitTypePenaltyMap;
 		ArrayList<String> obstacles;
@@ -61,16 +64,26 @@ public class GameBattleEditorGUI {
 		}
 		else {
 			inputUnitTypePenaltyMap = new HashMap<>();
-			System.out.println("Напиши в строку свои иконки препятсвий! Учти, что их не может быть только 4:");
+			String writeYourObstacles = "Напиши в строку свои иконки препятсвий! Учти, что их может быть только 4:";
+			System.out.println(writeYourObstacles);
 			obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
-			while (obstacles.size() != 4) {
-				System.out.println("Ты ввел НЕ 4 препятствия!");
+			while (true) {
+				if (obstacles.size() != 4) {
+					System.out.println("Ты ввел НЕ 4 препятствия!");
+				} else if (!checkEachObstacleSizeIsOne(obstacles)) {
+					System.out.println("Иконки препятствий должны состоять из 1 символа!");
+				}
+				else {
+					break;
+				}
+				System.out.println(writeYourObstacles);
+				obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
 			}
 			System.out.println("Для каждого типа юнитов введи штрафы за передвижение по препятствиям:");
-			for (String unitType: GameBattle.getUnitsTypes()) {
+			for (String unitType : GameBattle.getUnitsTypes()) {
 				System.out.println(unitType + ":");
 				inputUnitTypePenaltyMap.put(unitType, new HashMap<>());
-				for (String obstacle: obstacles) {
+				for (String obstacle : obstacles) {
 					System.out.print(obstacle + ":");
 					String obstaclePenaltyString = gamer.input().split(" ")[0];
 					while (true) {
@@ -89,7 +102,7 @@ public class GameBattleEditorGUI {
 			}
 		}
 		System.out.println("Вот твой шаблон для карты:");
-		printBattleMapExample(sizeX, sizeY);
+		printBattleMapExample(sizeX, sizeY, minObstacleIcon(inputUnitTypePenaltyMap));
 		System.out.println("Скопируй его, вставляй по одной строке в консоль, редактируй и в конце нажми Enter!");
 		String[][] inputMap = inputBattleMap(gamer, sizeX, sizeY);
 		Set<String> obstacleSet = new HashSet<>(obstacles);
@@ -113,7 +126,7 @@ public class GameBattleEditorGUI {
 			}
 			System.out.println();
 			System.out.println("Вот твой шаблон для карты:");
-			printBattleMapExample(sizeX, sizeY);
+			printBattleMapExample(sizeX, sizeY, minObstacleIcon(inputUnitTypePenaltyMap));
 			System.out.println("Скопируй его, вставляй по одной строке в консоль, редактируй и в конце нажми Enter!");
 			inputMap = inputBattleMap(gamer, sizeX, sizeY);
 		}
@@ -149,12 +162,41 @@ public class GameBattleEditorGUI {
 		return "";
 	}
 
-	private void printBattleMapExample(int sizeX, int sizeY) {
+	private void printBattleMapExample(int sizeX, int sizeY, String basicField) {
 		for (int i = 0; i < sizeY; i++) {
 			for (int j = 0; j < sizeX - 1; j++) {
-				System.out.print(BattleMap.getDefaultFields().getFirst() + " ");
+				System.out.print(basicField + " ");
 			}
-				System.out.println(BattleMap.getDefaultFields().getFirst());
+				System.out.println(basicField);
 		}
+	}
+
+	private boolean checkEachObstacleSizeIsOne(ArrayList<String> obstacles) {
+		for (String obstacle : obstacles) {
+			if (obstacle.length() != 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private String minObstacleIcon(HashMap<String, HashMap<String, Float>> typePenaltiesMap) {
+		HashMap<String, Float> fieldPenaltyMap = typePenaltiesMap.get(GameBattle.getUnitsTypes().getFirst());
+		String returnField = "";
+		Float minPenalty = Float.MAX_VALUE;
+		for (int i = 1; i < GameBattle.getUnitsTypes().size(); i++) {
+			for (String field: typePenaltiesMap.get(GameBattle.getUnitsTypes().get(i)).keySet()) {
+				fieldPenaltyMap.put(field, fieldPenaltyMap.get(field) +
+						typePenaltiesMap.get(GameBattle.getUnitsTypes().get(i)).get(field));
+			}
+		}
+		for (String field: fieldPenaltyMap.keySet()) {
+			fieldPenaltyMap.put(field, fieldPenaltyMap.get(field) / GameBattle.getUnitsTypes().size());
+			if (fieldPenaltyMap.get(field) < minPenalty) {
+				minPenalty = fieldPenaltyMap.get(field);
+				returnField = field;
+			}
+		}
+		return returnField;
 	}
 }
