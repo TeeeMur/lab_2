@@ -15,9 +15,9 @@ public class Unit {
 	protected String name;
 	protected int healthPoints;
 	protected int defensePoints;
-	protected final int attackPoints;
-	protected final int attackDistance;
-	protected final int movePoints;
+	protected int attackPoints;
+	protected int attackDistance;
+	protected int movePoints;
 	protected final int costPoints;
 	protected int xCoord;
 	protected int yCoord;
@@ -43,12 +43,53 @@ public class Unit {
 		return mapImage;
 	}
 
+	public void setMapImage(String mapImage) {
+		this.mapImage = mapImage;
+	}
+
 	public final String getName() {
 		return name;
 	}
 
+	public final void setName(String name) {
+		this.name = name;
+	}
+
 	public final int getCostPoints() {
 		return costPoints;
+	}
+
+	public final int getParamByIndex(int index) {
+		return switch (index) {
+			case (0) -> getHealthPoints();
+			case (1) -> getAttackPoints();
+			case (2) -> getAttackDistance();
+			case (3) -> getDefensePoints();
+			case (4) -> getMovePoints();
+			default -> 0;
+		};
+	}
+
+	public final void setParamByIndex(int index, int value) {
+		switch (index) {
+			case (0):
+				healthPoints = value;
+				break;
+			case (1):
+				attackPoints = value;
+				break;
+			case (2):
+				attackDistance = value;
+				break;
+			case (3):
+				defensePoints = value;
+				break;
+			case (4):
+				movePoints = value;
+				break;
+			default:
+				break;
+		}
 	}
 
 	public final int getMovePoints() {
@@ -73,7 +114,11 @@ public class Unit {
 
 	public final int getxCoord() { return xCoord; }
 
+	public final void setxCoord(int xCoord) { this.xCoord = xCoord; }
+
 	public final int getyCoord() { return yCoord; }
+
+	public final void setyCoord(int yCoord) { this.yCoord = yCoord; }
 
 	public boolean checkDeath() {
 		return healthPoints <= 0;

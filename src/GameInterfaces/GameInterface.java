@@ -47,7 +47,7 @@ public class GameInterface {
 				1 - загрузиться с сохраненного файла
 				2 - начать новую игру
 				3 - создать новую карту с новыми полями
-				Любой другой символ или последовательность символов - выйти из игры""");
+				4 - выйти из игры""");
 		int choice = Integer.parseInt(checkAnswer(gamer, gamer.inputOneWord(), new ArrayList<>(Arrays.asList("1", "2", "3", "4"))));
 		return switch (choice) {
 			case (1) -> CHOICE_DOWNLOAD;
@@ -264,7 +264,7 @@ public class GameInterface {
 		GameBattle gameBattle;
 		int answer;
 		HashMap<String, Integer> gameBattleAcquiredResources;
-		GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer);
+		GameBattleInterface gameBattleInterface = new GameBattleInterface(gamer, game);
 		int diff = gameBattleInterface.newGameBattle();
 		System.out.println("""
 				Введи:
@@ -274,7 +274,7 @@ public class GameInterface {
 		answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(Arrays.asList("1", "2", "0"))));
 		switch (answer) {
 			case (1):
-				gameBattle = new GameBattle(diff);
+				gameBattle = new GameBattle(diff, game);
 				break;
 			case (2):
 				BattleMap battleMap;
@@ -324,14 +324,40 @@ public class GameInterface {
 					saveMapPathByGamer(mapAnswerPath);
 				}
 				HashMap<String, Buildable> buildableHashMap = game.getDefaultBuildings();
-				gameBattle = new GameBattle(diff,
+				HashMap<String, HashMap<String, ArrayList<Integer>>> hostelUnits = game.getHostelUnits(diff);
+				HashMap<String, ArrayList<String>> hostelUnitsTyping = new HashMap<>(){{
+					for (String unitType: hostelUnits.keySet()) {
+						put(unitType, new ArrayList<>(hostelUnits.get(unitType).keySet()));
+					}
+				}};
+				HashMap<String, ArrayList<Integer>> hostelUnitsSpecsMap = new HashMap<>() {{
+					for (String unitType: hostelUnits.keySet()) {
+						for (String unitName: hostelUnits.get(unitType).keySet()) {
+							put(unitName, hostelUnits.get(unitType).get(unitName));
+						}
+					}
+				}};
+				if (buildableHashMap.get(Hostel.NAME).getLevel() != 0) {
+					if (hostelUnitsSpecsMap.containsKey(Game.STEALER)) {
+						System.out.println("Хехе, у тебя завелся вор!");
+					} else {
+						System.out.println("Твои наемники:");
+						GameBattleInterface.printUnitsArray(
+								BattleMap.getDefaultPenalties(),
+								hostelUnitsTyping,
+								hostelUnitsSpecsMap
+						);
+					}
+				}
+				gameBattle = new GameBattle(game, diff,
 						buildableHashMap.get(Healer.NAME).getBuildingUpper(),
 						buildableHashMap.get(BlacksmithHouse.NAME).getBuildingUpper(),
 						buildableHashMap.get(Arsenal.NAME).getBuildingUpper(),
 						buildableHashMap.get(Tavern.NAME).getBuildingUpper(Tavern.PENALTY_TYPE),
 						buildableHashMap.get(Tavern.NAME).getBuildingUpper(Tavern.MOVE_TYPE),
 						battleMap,
-						game.getAcademyUnits());
+						game.getAcademyUnits(),
+						hostelUnits);
 				break;
 			default:
 				return;
@@ -348,16 +374,23 @@ public class GameInterface {
 	}
 
 	private void gameBuyNewBuilding() {
-		boolean spendAbility = false;
+		boolean spendAbility;
 		HashMap<String, Buildable> buildingsHashMap = game.getDefaultBuildings();
 		ArrayList<String> spendableBuildings = new ArrayList<>();
 		System.out.println("Вот твои ресурсы:");
 		printResources();
 		System.out.println("Вот цены на покупку/улучшение зданий:");
 		for (String buildingName : game.getDefaultBuildings().keySet()) {
+			spendAbility = false;
 			Buildable building = buildingsHashMap.get(buildingName);
 			String costType = building.getCostType();
 			String costTypeString = "";
+			String firstWord;
+			if (building.getLevel() == 0) {
+				firstWord = "Построить";
+			} else {
+				firstWord = "Улучшить";
+			}
 			if (costType.equals(Game.GOLD)) {
 				if (game.getResource(Game.GOLD) >= building.getUpgradeCost() &&
 						building.getLevel() != building.getMaxLevel()) {
@@ -373,22 +406,14 @@ public class GameInterface {
 				}
 				costTypeString = " эликсира";
 			}
-			String firstWord;
-			if (building.getLevel() == 0) {
-				firstWord = "Построить";
-			} else {
-				firstWord = "Улучшить";
-			}
-			System.out.println(firstWord + " здание " + buildingName + ": " +
+			if (spendAbility) {
+				System.out.println(firstWord + " здание " + buildingName + ": " +
 					building.getUpgradeCost() + costTypeString);
+			}
 		}
-		if (!spendAbility) {
+		if (spendableBuildings.isEmpty()) {
 			System.out.println("У тебя не хватает ресурсов для покупки/улучшения зданий!");
 		} else {
-			System.out.println("Вот список зданий, которые ты можешь построить/улучшить:");
-			for (String buildingName : spendableBuildings) {
-				System.out.println(buildingName);
-			}
 			System.out.print("Введи название здания, которое хочешь построить/улучшить;" +
 					"\nЕсли не хочешь, введи \"нет\":");
 			ArrayList<String> answerList = new ArrayList<>(spendableBuildings.stream().map(String::toLowerCase).toList());
@@ -561,7 +586,7 @@ public class GameInterface {
 			} else if (Integer.parseInt(typeOfUnit) <= 0 || Integer.parseInt(typeOfUnit) > GameBattle.getUnitsTypes().size()) {
 				System.out.println("Введи индекс из списка сверху!");
 			} else {
-				typeOfUnit = GameBattle.getUnitsTypes().get(Integer.parseInt(typeOfUnit));
+				typeOfUnit = GameBattle.getUnitsTypes().get(Integer.parseInt(typeOfUnit) - 1);
 				break;
 			}
 			typeOfUnit = gamer.inputOneWord();
@@ -572,7 +597,7 @@ public class GameInterface {
 		if (Objects.equals(inputUnitName.toLowerCase(), "нет")) {
 			return;
 		}
-		while (inputUnitName.length() < 15) {
+		while (inputUnitName.length() >= 15) {
 			System.out.println("Длина имени не должна превышать 15! " +
 					"Введи имя еще раз, введи \"нет\", если хочешь вернуться в меню:");
 			inputUnitName = gamer.input().split(" ")[0];
@@ -613,7 +638,7 @@ public class GameInterface {
 		} else {
 			paramsList.add(unitCost);
 			game.addUnit(typeOfUnit, inputUnitName, paramsList);
-			System.out.println("Ты добавил нового юнита к себе в академию!");
+			System.out.println("Ты добавил нового юнита к себе в академию! Стоимость юнита " + inputUnitName + ": " + unitCost + " монет.");
 		}
 	}
 

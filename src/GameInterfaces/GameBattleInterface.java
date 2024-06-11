@@ -20,9 +20,11 @@ public class GameBattleInterface {
 	private final String colorUnitStateFormat = ANSI_YELLOW + ANSI_RESET + ANSI_YELLOW + ANSI_RESET + ANSI_GREEN + ANSI_RESET + ANSI_BLUE + ANSI_RESET + ANSI_RED + ANSI_RESET;
 	GameBattle gameBattle;
 	Gamer gamer;
+	Game game;
 
-	public GameBattleInterface(Gamer gamer) {
+	public GameBattleInterface(Gamer gamer, Game game) {
 		this.gamer = gamer;
+		this.game = game;
 	}
 
 	public int newGameBattle() {
@@ -70,7 +72,7 @@ public class GameBattleInterface {
 		}};
 		String purchaseUnitName;
 		System.out.println(prePrintGamerUnitsArrayChoice);
-		printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
+		printUnitsArray(gameBattle.getUnitTypesPenalties(), GameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
 		String writeYourChoiceString = """
 				Напиши в строку, каких и сколько героев хочешь взять, например: Мечник 2""";
 		String writeAndAnswerChoiceString = writeYourChoiceString + "\n" +
@@ -88,7 +90,7 @@ public class GameBattleInterface {
 					System.out.println(hasPurchasedUnitName + ": " + hasPurchasedStringMap.get(hasPurchasedUnitName));
 				}
 			}
-			System.out.println("У тебя осталось " + ANSI_RED + (gameBattle.getWallet() - sum) + ANSI_RESET + " денежек в кошельке");
+			System.out.println("У тебя осталось " + ANSI_RED + (gameBattle.getWallet() - sum) + ANSI_RESET + " монет в кошельке");
 			purchaseStringList = new ArrayList<>(Arrays.asList(gamer.input().toLowerCase().split(" "))); // строка "Герой Кол-во" из ввода
 			switch (purchaseStringList.size()) {
 				case (3):
@@ -196,7 +198,7 @@ public class GameBattleInterface {
 	private void printChoiceUnitsAgain(String prePrintUnitsArrayChoice, String writeYourChoiceString) {
 		System.out.println("Набор юнитов начинается заново!");
 		System.out.println(prePrintUnitsArrayChoice);
-		printUnitsArray(gameBattle.getUnitTypesPenalties(), gameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
+		printUnitsArray(gameBattle.getUnitTypesPenalties(), GameBattle.getUnitsTyping(), gameBattle.getUnitsSpecsMap());
 		System.out.println(writeYourChoiceString);
 	}
 
@@ -210,7 +212,7 @@ public class GameBattleInterface {
 		Object[] tempSpecs = new Object[8];
 		int iter = 1;
 		for (int i = 0; i < unitsTypes.size(); i++) {
-			String typeName = unitsTypes.get(i) + " ".repeat(unitsTypes.stream().mapToInt(String::length).max().orElse(15) - unitsTypes.get(i).length() + 5);
+			String typeName = unitsTypes.get(i) + " ".repeat(unitsTypes.stream().mapToInt(String::length).max().orElse(15) - unitsTypes.get(i).length() + 1);
 			String typeColumnName = "|      |           " + ANSI_BLUE + typeName + ANSI_RESET + "         |   " +
 				formattedTypeOfUnitsColumnName(unitTypesPenalties.get(unitsTypes.get(i))) + "      |\n";
 			System.out.print(typeColumnName);
@@ -243,7 +245,7 @@ public class GameBattleInterface {
 		for (String field: unitPenalties.keySet()) {
 			pattern.append(String.format(" %s: %.1f", field, unitPenalties.get(field)));
 		}
-		pattern.append(" ".repeat(49 - pattern.length()));
+		pattern.append(" ".repeat(53 - pattern.toString().length()));
 		return pattern.toString();
 	}
 
@@ -425,6 +427,38 @@ public class GameBattleInterface {
 						(descriptionList.get(3) + 1) + ") и концом в поле (" + (descriptionList.get(4) + 1) + ";" +
 						(descriptionList.get(5) + 1) + ").";
 				return returnString;
+			case (4):
+				if (descriptionList.get(2) == 6 || descriptionList.get(2) == 5) {
+					String typeOfResources;
+					if (descriptionList.get(2) == 6) {
+						typeOfResources = "золота";
+					}
+					else {
+						typeOfResources = "эликсира";
+					}
+					returnString = "Вор у тебя украл " + descriptionList.get(3) + " " + typeOfResources + "!\n" +
+					"Твое состояние сейчас: \n" +
+					"Золото: " + game.getResource(Game.GOLD) +
+					"\nЭликсир: " + game.getResource(Game.ELIXIR);
+					return returnString;
+				}
+				else if (descriptionList.get(2) >= 4 && descriptionList.get(2) == 0) {
+					String typeOfParam = (switch (descriptionList.get(2)) {
+						case (0) -> "здоровья";
+						case (1) -> "атаки";
+						case (2) -> "дистанции атаки";
+						case (3) -> "защиты";
+						default -> "дальности хода";
+					});
+					returnString = "Вор украл у твоего героя " + gameBattle.getGamerUnitsArray().get(descriptionList.get(4)) +
+							" " + descriptionList.get(3) + " очков " + typeOfParam + "!";
+					return returnString;
+				}
+				else {
+					String stealedUnitName = gameBattle.getSecondGamerUnitsArray().getLast().getName().substring(1, gameBattle.getSecondGamerUnitsArray().getLast().getName().length() - 1);
+					returnString = "Вор украл твоего героя " + stealedUnitName + "!";
+					return returnString;
+				}
 			default:
 				return "Бот что-то сделал...";
 		}
@@ -583,6 +617,12 @@ public class GameBattleInterface {
 			secondGamerActionString = parseBotMoveDescription(gamerUnitsNames, gameBattle.secondGamerMove());
 			System.out.println("Результат хода твоего противника:");
 			System.out.println(secondGamerActionString);
+			if (!gameBattle.getHostelUnitsLastMoves().isEmpty()) {
+				ArrayList<String> hostelMoveResult = gameBattle.hostelMoveModification();
+				for (String hostelUnitMoveResultName: hostelMoveResult) {
+					System.out.println("У героя " + hostelUnitMoveResultName + " закончились ходы! Он удаляется с поля боя!");
+				}
+			}
 		}
 		System.out.println(ANSI_RED + "Ты проиграл!" + ANSI_RESET);
 		result.put(Game.GOLD, heroCount * 7);

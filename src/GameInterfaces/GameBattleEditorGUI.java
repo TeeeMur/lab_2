@@ -64,12 +64,12 @@ public class GameBattleEditorGUI {
 		}
 		else {
 			inputUnitTypePenaltyMap = new HashMap<>();
-			String writeYourObstacles = "Напиши в строку свои иконки препятсвий! Учти, что их может быть только 4:";
+			String writeYourObstacles = "Напиши в строку свои иконки препятсвий! Учти, что их может быть от 3 до 5:";
 			System.out.println(writeYourObstacles);
 			obstacles = new ArrayList<>(Arrays.asList(gamer.input().split(" ")));
 			while (true) {
-				if (obstacles.size() != 4) {
-					System.out.println("Ты ввел НЕ 4 препятствия!");
+				if (obstacles.size() < 3 || obstacles.size() > 5) {
+					System.out.println("Препятствий должно быть от 3 до 5!");
 				} else if (!checkEachObstacleSizeIsOne(obstacles)) {
 					System.out.println("Иконки препятствий должны состоять из 1 символа!");
 				}

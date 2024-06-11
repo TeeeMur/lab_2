@@ -6,6 +6,7 @@ package GameSubjects;
 
 import BattlePlace.BattleMap;
 import Bots.Bot;
+import Buildings.Hostel;
 import Units.Unit;
 
 import java.util.*;
@@ -19,9 +20,10 @@ public class GameBattle {
 	public static final String ANSI_BLUE = "\u001B[34m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 
-	private int wallet;
+	private final int wallet;
 	private final BattleMap battleMap;
 	private final Bot secondGamer;
+	private final Game game;
 
 	private final ArrayList<Unit> gamerUnitsArray = new ArrayList<>();
 	private final ArrayList<Unit> secondGamerUnitsArray = new ArrayList<>();
@@ -39,13 +41,13 @@ public class GameBattle {
 		add("Конные");
 	}};
 
-	private final HashMap<String, ArrayList<String>> unitsTyping = new HashMap<>() {{
+	private static final HashMap<String, ArrayList<String>> unitsTyping = new HashMap<>() {{
 		put(unitsTypes.getFirst(), new ArrayList<>(Arrays.asList("Мечник", "Копьеносец", "Топорщик")));
 		put(unitsTypes.get(1), new ArrayList<>(Arrays.asList("Тяжелый лучник", "Легкий лучник", "Арбалетчик")));
 		put(unitsTypes.get(2), new ArrayList<>(Arrays.asList("Рыцарь", "Кирасир", "Конный лучник")));
 	}};
 
-	private final HashMap<String, ArrayList<Integer>> unitsSpecsMap = new HashMap<>() {{
+	private static final HashMap<String, ArrayList<Integer>> defaultUnitsSpecsMap = new HashMap<>() {{
 		//Foot units
 		put(unitsTyping.get(unitsTypes.getFirst()).getFirst(), new ArrayList<>(Arrays.asList(50, 5, 1, 8, 3, 10)));
 		put(unitsTyping.get(unitsTypes.getFirst()).get(1), new ArrayList<>(Arrays.asList(100, 100, 100, 100, 100, 5)));
@@ -60,11 +62,21 @@ public class GameBattle {
 		put(unitsTyping.get(unitsTypes.get(2)).get(2), new ArrayList<>(Arrays.asList(25, 3, 3, 2, 5, 25)));
 	}};
 
+	private final HashMap<String, ArrayList<Integer>> unitsSpecsMap = new HashMap<>() {{
+		for (String unitName: defaultUnitsSpecsMap.keySet()) {
+			put(unitName, defaultUnitsSpecsMap.get(unitName));
+		}
+	}};
+
+	private final HashMap<String, Integer> hostelUnitsLastMoves = new HashMap<>();
+
 	private final HashMap<String, HashMap<String, Float>> unitTypesPenalties;
 
-	public GameBattle(int difficulty, int healthPercentUpper, int attackPercentUpper, int defensePercentUpper,
+	public GameBattle(Game game, int difficulty, int healthPercentUpper, int attackPercentUpper, int defensePercentUpper,
 					  int penaltyDecrease, int movePercentUpper,
-					  BattleMap battleMap, HashMap<String, HashMap<String, ArrayList<Integer>>> addUnitsMap) {
+					  BattleMap battleMap, HashMap<String, HashMap<String, ArrayList<Integer>>> addUnitsMap,
+					   HashMap<String, HashMap<String, ArrayList<Integer>>> hostelUnitsMap) {
+		this.game = game;
 		this.battleMap = battleMap;
 		float penaltyDowner = 1f - (float)penaltyDecrease / 100f;
 		unitTypesPenalties = this.battleMap.getPenalties();
@@ -87,18 +99,34 @@ public class GameBattle {
 			unitsSpecsMap.get(unitName).set(0, (int)(unitsSpecsMap.get(unitName).getFirst() * (1f + (float)healthPercentUpper / 100f)));
 			unitsSpecsMap.get(unitName).set(1, (int)(unitsSpecsMap.get(unitName).get(1) * (1f + (float)attackPercentUpper / 100f)));
 			unitsSpecsMap.get(unitName).set(3, (int)(unitsSpecsMap.get(unitName).get(3) * (1f + (float)defensePercentUpper / 100f)));
-			unitsSpecsMap.get(unitName).set(4, (int)(unitsSpecsMap.get(unitName).get(4) * (1 + (float)movePercentUpper / 100f)));
+			unitsSpecsMap.get(unitName).set(4, (int) (unitsSpecsMap.get(unitName).get(4) * (1 + (float) movePercentUpper / 100f)));
+		}
+		if (hostelUnitsMap.get(unitsTypes.getFirst()).containsKey(Game.STEALER)) {
+			secondGamerUnitsArray.add(new Unit(
+					ANSI_YELLOW + (secondGamerUnitsArray.size() + 1) + ANSI_RESET,
+					ANSI_YELLOW + Game.STEALER + ANSI_RESET,
+					hostelUnitsMap.get(unitsTypes.getFirst()).get(Game.STEALER),
+					unitTypesPenalties.get(unitsTypes.getFirst())
+			));
+		}
+		else {
+			for (String hostelUnitType: hostelUnitsMap.keySet()) {
+				for (String hostelUnitName: hostelUnitsMap.get(hostelUnitType).keySet()) {
+					hostelUnitsLastMoves.put(hostelUnitName, Hostel.MOVES_COUNT);
+				}
+			}
 		}
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
 	}
 
-	public GameBattle(int difficulty) {
+	public GameBattle(int difficulty, Game game) {
 		battleMap = new BattleMap(15, 15, difficulty);
 		wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
 				unitsSpecsMap, battleMap.getPenalties(), battleMap, difficulty);
 		unitTypesPenalties = battleMap.getPenalties();
 		placeUnitsIntoMap(secondGamerUnitsArray, battleMap.getSizeY() - 1);
+		this.game = game;
 	}
 
 	public static int maxWallet() {
@@ -118,22 +146,58 @@ public class GameBattle {
 		String tempPurchasedName;
 		String unitMapImage;
 		int order = 0;
+		if (!hostelUnitsLastMoves.containsKey(Game.STEALER)) {
+			for (String unitName: hostelUnitsLastMoves.keySet()) {
+				purchasedUnitsMap.put(unitName, 1);
+			}
+		}
 		for (String purchasedUnitName : purchasedUnitsMap.keySet()) {
 			int countToBuy = purchasedUnitsMap.get(purchasedUnitName);
 			for (Integer j = 0; j < countToBuy; j++) {
 				tempPurchasedName = purchasedUnitName.substring(0, 1).toUpperCase() +
 						purchasedUnitName.substring(1);
 				String unitPurchasedType = "";
-				for (String unitType: unitsTypes) {
+				String hostelUnitNameSubstring = purchasedUnitName.substring(0, purchasedUnitName.length() - 2);
+				for (String unitType : unitsTypes) {
+					if (hostelUnitsLastMoves.containsKey(purchasedUnitName)) {
+						if (unitsTyping.get(unitType).contains(hostelUnitNameSubstring)) {
+							unitPurchasedType = unitType;
+							break;
+						}
+					}
 					if (unitsTyping.get(unitType).contains(tempPurchasedName)) {
 						unitPurchasedType = unitType;
 						break;
 					}
 				}
-				tempUnitName = colorByType(unitPurchasedType) + tempPurchasedName + " " + (j + 1) + ANSI_RESET;
+				if (Objects.equals(unitPurchasedType, "")) {
+					for (String unitType: game.getAcademyUnits().keySet()) {
+						if (game.getAcademyUnits().get(unitType).containsKey(purchasedUnitName)) {
+							unitPurchasedType = unitType;
+							break;
+						}
+					}
+				}
+				String color;
+				ArrayList<Integer> specsList;
+				if (hostelUnitsLastMoves.containsKey(purchasedUnitName)) {
+					color = GameBattle.ANSI_CYAN;
+					specsList = unitsSpecsMap.get(hostelUnitNameSubstring);
+					int hostelUnitLastMoves = hostelUnitsLastMoves.remove(purchasedUnitName);
+					hostelUnitsLastMoves.put((tempPurchasedName + " " + (j + 1)), hostelUnitLastMoves);
+				}
+				else if (unitsSpecsMap.containsKey(tempPurchasedName)){
+					color = colorByType(unitPurchasedType);
+					specsList = unitsSpecsMap.get(tempPurchasedName);
+				}
+				else {
+					color = colorByType(unitPurchasedType);
+					specsList = game.getAcademyUnits().get(unitPurchasedType).get(purchasedUnitName);
+				}
+				tempUnitName = color + tempPurchasedName + " " + (j + 1) + ANSI_RESET;
 				order++;
-				unitMapImage = colorByType(unitPurchasedType) + order + ANSI_RESET;
-				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, unitsSpecsMap.get(tempPurchasedName),
+				unitMapImage = color + order + ANSI_RESET;
+				gamerUnitsArray.add(new Unit(unitMapImage, tempUnitName, specsList,
 						unitTypesPenalties.get(unitPurchasedType)));
 			}
 		}
@@ -180,7 +244,7 @@ public class GameBattle {
 
 	private void replaceUnitInMap(Unit moveUnit, int xMoveCoord, int yMoveCoord) {
 		String placeField = battleMap.getMapBasicFields().getFirst();
-		int isPortal = fieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord());
+		int isPortal = checkFieldIsPortal(moveUnit.getxCoord(), moveUnit.getyCoord());
 		if (isPortal != -1) {
 			placeField = portalsColoringArray.get(isPortal) + battleMap.getMapBasicFields().getFirst() + ANSI_RESET;
 		}
@@ -339,33 +403,59 @@ public class GameBattle {
 
 	// number:  2AB945
 	// indexes: 543210
-	// Scheme: 0 digit - type of action (double attack - 0/ attack - 1/ movement - 2/ chernomor portal creating - 3),
+	// Scheme: 0 digit - type of action:
+	//---------------------------------------------------------------------------------
+	// double attack - 0
 	//DOUBLE ATTACK:
 	//	1st digit - index of the ATTACKING hero of the bot,
 	//	2nd digit is the index of the ATTACKED hero of the opponent bot,
 	//	3rd digit is attackPoints for first enemy(0 if he is killed)
 	//	4th digit is the index of the SECOND ATTACKED hero of the opponent bot
 	//	5th digit is attackPoints for second enemy (0 if he is killed)
+	//---------------------------------------------------------------------------------
+	// attack - 1
 	//ATTACK:
 	//	1st digit - index of the ATTACKING hero of the bot,
-	//	2nd digit is the index of the ATTACKED hero of the opponent bot,
-	//	3rd digit is attackPoints for first enemy(0 if he is killed)
+	//	2nd digit is the index of the ATTACKED hero of the bot's opponent,
+	//	3rd digit is attackPoints for enemy(0 if he is killed)
 	//	other digits - nothing
+	//---------------------------------------------------------------------------------
+	// movement - 2
 	//MOVING:
 	//	1st digit is the index of the hero that is being MOVED,
 	//	2nd digit is the X coordinate
 	//	3rd digit is the Y coordinate
 	//	4th digit is marker for portal moving
+	//---------------------------------------------------------------------------------
+	// chernomor portal creating - 3
 	//CHERNOMOR PORTAL CREATING:
 	//	1st digit - number of chernomor hero of the bot
 	//	2nd digit - xStartCoord
 	//	3rd digit - yStartCoord
 	//	4th digit - xEndCoord
 	//	5th digit - yEndCoord
-	//	the whole number is in the 16-digit number system
+	//---------------------------------------------------------------------------------
+	// stealer stealing something - 4
+	//if there's no resources, stealer steals someone's params like movement range
+	//if there's no resources and params, they can steal enemy's units
+	//STEALER STEALING RESOURCES:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - type of resources
+	// 3rd digit - count of resources
+	//STEALER STEALING PARAMS:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - index of param (0-4)
+	// 3fd digit - count of param
+	// 4th digit - index of the hero that loses some count of param
+	//STEALER STEALING UNITS:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - type of action (7 - stealing enemy's unit)
+	// 3rd digit - index of stealed unit in bot's array
+	//---------------------------------------------------------------------------------
+	//THE WHOLE NUMBER IS IN 16-DIGIT NUMBER SYSTEM
 
 	public ArrayList<Integer> secondGamerMove() {
-		int secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray);
+		int secondGamerMove = secondGamer.botMove(secondGamerUnitsArray, gamerUnitsArray, battleMap, portalsArray, game);
 		ArrayList<Integer> moveParams = new ArrayList<>(){{
 			for (int i = 0; i < 6; i++) {
 				add((secondGamerMove / ((int)Math.pow(16, i)) % 16));
@@ -392,6 +482,7 @@ public class GameBattle {
 				returnList.set(4, moveParams.get(3));
 				returnList.set(5, secondGamerUnitsArray.get(moveParams.get(1)).getAttackPoints());
 				if (attackableUnit.checkDeath()) {
+					hostelUnitsLastMoves.remove(removeAscii(attackableUnit.getName()));
 					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 							attackableUnit.getyCoord());
 					gamerUnitsArray.remove(attackableUnit);
@@ -418,6 +509,7 @@ public class GameBattle {
 				returnList.set(4, 0);
 				returnList.set(5, 0);
 				if (attackableUnit.checkDeath()) {
+					hostelUnitsLastMoves.remove(removeAscii(attackableUnit.getName()));
 					battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 							attackableUnit.getyCoord());
 					gamerUnitsArray.remove(attackableUnit);
@@ -469,6 +561,56 @@ public class GameBattle {
 					returnList.set(i, moveParams.get(i));
 				}
 				break;
+			case (4):
+				returnList.set(0, 4);
+				returnList.set(1, moveParams.get(1));
+				if (moveParams.get(2) >= 0 && moveParams.get(2) <= 4) {
+					stealParamByCount(moveParams.get(2), moveParams.get(3), moveParams.get(4));
+					for (int i = 2; i < 5; i++) {
+						returnList.set(i, moveParams.get(i));
+					}
+					return returnList;
+				}
+				else if (moveParams.get(2) == 5 || moveParams.get(2) == 6) {
+					returnList.set(2, moveParams.get(2));
+					returnList.set(3, moveParams.get(3));
+					String typeOfResources;
+					if (moveParams.get(2) == 6){
+						typeOfResources = Game.GOLD;
+					}
+					else {
+						typeOfResources = Game.ELIXIR;
+					}
+					game.spendResource(moveParams.get(3), typeOfResources);
+					return returnList;
+				}
+				else {
+					Unit stealedUnit = gamerUnitsArray.remove((int)moveParams.get(3));
+					String newMapImage = ANSI_YELLOW + (secondGamerUnitsArray.size() + 1) + ANSI_RESET;
+					String newUnitName = "_" + stealedUnit.getName() + "_";
+					if (hostelUnitsLastMoves.containsKey(stealedUnit.getName())) {
+						int lastMoves = hostelUnitsLastMoves.remove(stealedUnit.getName());
+						hostelUnitsLastMoves.put(newUnitName, lastMoves);
+					}
+					stealedUnit.setMapImage(newMapImage);
+					stealedUnit.setName(newUnitName);
+					secondGamerUnitsArray.add(stealedUnit);
+					for (int i = 0; i < battleMap.getSizeX(); i++) {
+						for (int j = battleMap.getSizeY() - 1; j >= battleMap.getSizeY() / 2; j--) {
+							if (Objects.equals(battleMap.getFieldByPosition(i, j), battleMap.getMapBasicFields().getFirst())){
+								battleMap.placeSmth(newMapImage, i, j);
+								stealedUnit.setxCoord(i);
+								stealedUnit.setyCoord(j);
+								for (int k = 0; k < 2; k++) {
+									returnList.set(k, moveParams.get(k));
+								}
+								returnList.set(3, secondGamerUnitsArray.size() - 1);
+								return returnList;
+							}
+						}
+					}
+				}
+				break;
 			default:
 				break;
 		}
@@ -493,6 +635,37 @@ public class GameBattle {
 		return returnList;
 	}
 
+	public ArrayList<String> hostelMoveModification() {
+		hostelUnitsLastMoves.replaceAll((n, v) -> hostelUnitsLastMoves.get(n) - 1);
+		ArrayList<String> unitNamesToRemove = new ArrayList<>();
+		for (String unitName : hostelUnitsLastMoves.keySet()) {
+			if (hostelUnitsLastMoves.get(unitName) == 0) {
+				for (int i = 0; i < gamerUnitsArray.size(); i++) {
+					if (Objects.equals(removeAscii(gamerUnitsArray.get(i).getName()), unitName)) {
+						battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), gamerUnitsArray.get(i).getxCoord(),
+							gamerUnitsArray.get(i).getyCoord());
+						unitNamesToRemove.add(gamerUnitsArray.remove(i).getName());
+					}
+				}
+				for (int i = 0; i < secondGamerUnitsArray.size(); i++) {
+					if (Objects.equals(removeAscii(secondGamerUnitsArray.get(i).getName()), unitName)) {
+						battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), secondGamerUnitsArray.get(i).getxCoord(),
+								secondGamerUnitsArray.get(i).getyCoord());
+						unitNamesToRemove.add(secondGamerUnitsArray.remove(i).getName());
+					}
+				}
+			}
+		}
+		for (String unitName : unitNamesToRemove) {
+			hostelUnitsLastMoves.remove(unitName);
+		}
+		return unitNamesToRemove;
+	}
+
+	public HashMap<String, Integer> getHostelUnitsLastMoves() {
+		return hostelUnitsLastMoves;
+	}
+
 	public Bot getSecondGamer() {
 		return secondGamer;
 	}
@@ -501,7 +674,7 @@ public class GameBattle {
 		return portalsArray;
 	}
 
-	public HashMap<String, ArrayList<String>> getUnitsTyping() {
+	public static HashMap<String, ArrayList<String>> getUnitsTyping() {
 		return unitsTyping;
 	}
 
@@ -509,7 +682,20 @@ public class GameBattle {
 		return unitsTypes;
 	}
 
-	public int fieldIsPortal(int xCoord, int yCoord) {
+	public static HashMap<String, ArrayList<Integer>> getDefaultUnitsSpecsMap() {
+		return defaultUnitsSpecsMap;
+	}
+
+	private void stealParamByCount(int paramIndex, int stealCount, int gamerUnitIndexInArray) {
+		if (paramIndex >= 5) {
+			return;
+		}
+		Unit victim = gamerUnitsArray.get(gamerUnitIndexInArray);
+		int previousParam = victim.getParamByIndex(paramIndex);
+		victim.setParamByIndex(paramIndex,previousParam - stealCount);
+	}
+
+	public int checkFieldIsPortal(int xCoord, int yCoord) {
 		for (int i = 0; i < portalsArray.size(); i++) {
 			if (xCoord == portalsArray.get(i).getFirst() && yCoord == portalsArray.get(i).get(1) ||
 			xCoord == portalsArray.get(i).get(2) && yCoord == portalsArray.get(i).get(3)) {

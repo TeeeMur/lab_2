@@ -1,6 +1,7 @@
 package Bots;
 
 import BattlePlace.BattleMap;
+import GameSubjects.Game;
 import GameSubjects.GameBattle;
 import Units.Chernomor;
 import Units.Unit;
@@ -10,6 +11,7 @@ import java.util.*;
 public class Bot {
 
 	int botDifficulty;
+	final int PARAM_STEAL_COUNT = 1;
 	Random random = new Random();
 
 	private final ArrayList<String> doubleAttackersIndexList;
@@ -75,6 +77,11 @@ public class Bot {
 		}
 	}
 
+	public boolean ableStealParamIndex(ArrayList<Unit> enemyUnitsArray, int paramIndex, int gamerUnitIndexInArray) {
+		Unit victim = enemyUnitsArray.get(gamerUnitIndexInArray);
+		return victim.getParamByIndex(paramIndex) > 1;
+	}
+
 	// number:  2AB945
 	// indexes: 543210
 	// Scheme: 0 digit - type of action (double attack - 0/ attack - 1/ movement - 2/ chernomor portal creating - 3),
@@ -97,8 +104,25 @@ public class Bot {
 	//	3rd digit - yStartCoord
 	//	4th digit - xEndCoord
 	//	5th digit - yEndCoord
+	//--------------------------------------------------------------------------------
+	// stealer stealing something - 4
+	//(if there's no resources, stealer steals someone's params like movement range)
+	//STEALER STEALING RESOURCES:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - type of resources (5 - elixir, 6 - gold)
+	// 3rd digit - count of resources
+	//STEALER STEALING PARAMS:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - index of param (0-4)
+	// 3fd digit - count of param
+	// 4th digit - index of the hero that loses some count of param
+	//STEALER STEALING UNITS:
+	// 1st digit - number of stealer hero of the bot
+	// 2nd digit - type of action (7 - stealing enemy's unit)
+	// 3rd digit - index of stealed unit
 	//	the whole number is in the 16-digit number system
-	public int botMove(ArrayList<Unit> botUnitsArray, ArrayList<Unit> enemyUnitsArray, BattleMap battleMap, ArrayList<ArrayList<Integer>> existingPortals) {
+	public int botMove(ArrayList<Unit> botUnitsArray, ArrayList<Unit> enemyUnitsArray, BattleMap battleMap, ArrayList<ArrayList<Integer>> existingPortals,
+					   Game game) {
 		int actingBotUnitIndex;
 		int attackedEnemyUnitIndex = 0;
 		int secondAttackedEnemyUnitIndex;
@@ -152,6 +176,54 @@ public class Bot {
 						coordsList.get(0).get(0) * (int)Math.pow(16, 2) +
 						actingBotUnitIndex * 16 + 3;
 				return returnInteger;
+			}
+		}
+		if (Objects.equals(actingUnit.getName(), Game.STEALER)) {
+			float acting = random.nextFloat();
+			if (acting >= 0.5f) {
+				if (game.getResource(Game.GOLD) != 0) {
+					int elixirCount = game.getResource(Game.ELIXIR);
+					game.spendResource((int) (elixirCount * 0.1), Game.ELIXIR);
+					returnInteger = (int) (elixirCount * 0.1) * (int) Math.pow(16, 3) +
+							5 * (int) Math.pow(16, 2) +
+							actingBotUnitIndex * 16 + 4;
+					return returnInteger;
+				}
+				if (game.getResource(Game.ELIXIR) != 0) {
+					int goldCount = game.getResource(Game.GOLD);
+					game.spendResource((int) (goldCount * 0.1), Game.GOLD);
+					returnInteger = (int) (goldCount * 0.1) * (int) Math.pow(16, 3) +
+							6 * (int) Math.pow(16, 2) +
+							actingBotUnitIndex * 16 + 4;
+					return returnInteger;
+				}
+				ArrayList<Integer> enemyUnitIndexes = new ArrayList<>() {{
+					for (int i = 0; i < enemyUnitsArray.size(); i++) {
+						add(i);
+					}
+				}};
+				while (!enemyUnitIndexes.isEmpty()) {
+					int enemyUnitIndex = enemyUnitIndexes.get(random.nextInt(enemyUnitIndexes.size()));
+					ArrayList<Integer> loyalParamIndexes = new ArrayList<>(Arrays.asList(1, 2, 4));
+					while (!loyalParamIndexes.isEmpty()) {
+						int stealParamIndex = loyalParamIndexes.get(random.nextInt(loyalParamIndexes.size()));
+						if (ableStealParamIndex(enemyUnitsArray,
+								stealParamIndex, enemyUnitIndex)) {
+							returnInteger = enemyUnitIndex * (int) Math.pow(16, 4) +
+									PARAM_STEAL_COUNT * (int) Math.pow(16, 3) +
+									stealParamIndex * (int) Math.pow(16, 2) +
+									actingBotUnitIndex * 16 + 4;
+							return returnInteger;
+						} else {
+							loyalParamIndexes.remove((Integer) stealParamIndex);
+						}
+					}
+					enemyUnitIndexes.remove((Integer) (enemyUnitIndex));
+				}
+				int enemyUnitIndexToSteal = random.nextInt(enemyUnitsArray.size());
+				return enemyUnitIndexToSteal * (int) Math.pow(16, 3) +
+						7 * (int) Math.pow(16, 2) +
+						actingBotUnitIndex * 16 + 4;
 			}
 		}
 		int maxUnitMovePoints = actingUnit.getMovePoints();

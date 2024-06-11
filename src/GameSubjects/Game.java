@@ -14,6 +14,7 @@ public class Game implements Serializable {
 	public static final String ELIXIR = "Эликсир";
 	public static final String BUILDING_UPPER_STRING = "upper";
 	public static final String BUILDING_COST_STRING = "cost";
+	public static final String STEALER = "Вор";
 	Date dateOfCreation;
 	Date dateOfLastSession;
 
@@ -25,9 +26,11 @@ public class Game implements Serializable {
 		put(Hotel.NAME, new Hotel());
 		put(Market.NAME, new Market());
 		put(Tavern.NAME, new Tavern());
+		put(Hostel.NAME, new Hostel());
 	}};
 
 	private final HashMap<String, HashMap<String, ArrayList<Integer>>> academyUnits;
+	private HashMap<String, HashMap<String, ArrayList<Integer>>> hostelUnits;
 
 	public Game(int firstGold, int firstElixir) {
 		resources = new HashMap<>() {{
@@ -42,10 +45,15 @@ public class Game implements Serializable {
 		}};
 		dateOfCreation = new Date();
 		dateOfLastSession = new Date();
+		hostelUnits = new HashMap<>() {{
+			for (String type : GameBattle.getUnitsTypes()) {
+				put(type, new HashMap<>());
+			}
+		}};
 	}
 
 	public void addUnit(String type, String name, ArrayList<Integer> specs) {
-		if (academyUnits.size() == 3 || specs.size() != 6 || !academyUnits.containsKey(type)) {
+		if (getAcademyUnitsSize() == buildings.get(Academy.NAME).getBuildingUpper() || specs.size() != 6 || !academyUnits.containsKey(type)) {
 			return;
 		}
 		academyUnits.get(type).put(name, specs);
@@ -69,6 +77,36 @@ public class Game implements Serializable {
 
 	public HashMap<String, HashMap<String, ArrayList<Integer>>> getAcademyUnits() {
 		return academyUnits;
+	}
+
+	public HashMap<String, HashMap<String, ArrayList<Integer>>> getHostelUnits(int difficulty) {
+		Random r = new Random();
+		hostelUnits = new HashMap<>() {{
+			for (String type : GameBattle.getUnitsTypes()) {
+				put(type, new HashMap<>());
+			}
+		}};
+		if (r.nextFloat() < 0.5 && difficulty >= 4) {
+			HashMap<String, HashMap<String, ArrayList<Integer>>> returnHostelUnits = new HashMap<>();
+			returnHostelUnits.put(GameBattle.getUnitsTypes().getFirst(), new HashMap<>() {{
+				put(STEALER, new ArrayList<>(Arrays.asList(70, 2, 4, 2, 3, 0)));
+			}});
+			return returnHostelUnits;
+		}
+		else {
+			for (int i = 0; i < buildings.get(Hostel.NAME).getBuildingUpper(); i++) {
+				String hostelUnitType = GameBattle.getUnitsTypes().get(r.nextInt(GameBattle.getUnitsTypes().size()));
+				int hostelUnitTypeCount = GameBattle.getUnitsTyping().get(hostelUnitType).size();
+				String hostelUnitName = GameBattle.getUnitsTyping().get(hostelUnitType).get(r.nextInt(hostelUnitTypeCount));
+				while (hostelUnits.get(hostelUnitType).containsKey(hostelUnitName + "_H")) {
+					hostelUnitType = GameBattle.getUnitsTypes().get(r.nextInt(GameBattle.getUnitsTypes().size()));
+					hostelUnitTypeCount = GameBattle.getUnitsTyping().get(hostelUnitType).size();
+					hostelUnitName = GameBattle.getUnitsTyping().get(hostelUnitType).get(r.nextInt(hostelUnitTypeCount));
+				}
+				hostelUnits.get(hostelUnitType).put(hostelUnitName + "_H", GameBattle.getDefaultUnitsSpecsMap().get(hostelUnitName));
+			}
+			return hostelUnits;
+		}
 	}
 
 	public void upgradeGameBuilding(String buildingName, String type) {
@@ -158,6 +196,14 @@ public class Game implements Serializable {
 
 	public Date getDateOfLastSession() {
 		return dateOfLastSession;
+	}
+
+	private int getAcademyUnitsSize() {
+		int count = 0;
+		for (String unitType: academyUnits.keySet()) {
+			count += academyUnits.get(unitType).size();
+		}
+		return count;
 	}
 
 }

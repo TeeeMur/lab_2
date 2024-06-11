@@ -45,7 +45,7 @@ public class BattleMap implements Serializable {
 		penalties = DEFAULT_PENALTIES;
 		sizeX = mapSizeX;
 		sizeY = mapSizeY;
-		maxUnitsOnLine = mapSizeX - 2;
+		maxUnitsOnLine = mapSizeX - 3;
 		battleMapMatrix = new String[mapSizeY][mapSizeX];
 		ArrayList<String> fieldsToChoose = new ArrayList<>(DEFAULT_FIELDS);
 		for (int i = difficulty; i < 6 + sizeX + sizeY - 28; i++) {
