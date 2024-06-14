@@ -4,6 +4,7 @@ import BattlePlace.BattleMap;
 import Buildings.*;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.*;
 
 public class Game implements Serializable {
@@ -15,8 +16,7 @@ public class Game implements Serializable {
 	public static final String BUILDING_UPPER_STRING = "upper";
 	public static final String BUILDING_COST_STRING = "cost";
 	public static final String STEALER = "Вор";
-	Date dateOfCreation;
-	Date dateOfLastSession;
+	LocalDate dateOfLastSession;
 
 	private final HashMap<String, Buildable> buildings = new HashMap<>() {{
 		put(Healer.NAME, new Healer());
@@ -43,8 +43,7 @@ public class Game implements Serializable {
 				put(type, new HashMap<>());
 			}
 		}};
-		dateOfCreation = new Date();
-		dateOfLastSession = new Date();
+		dateOfLastSession = LocalDate.now();
 		hostelUnits = new HashMap<>() {{
 			for (String type : GameBattle.getUnitsTypes()) {
 				put(type, new HashMap<>());
@@ -86,6 +85,9 @@ public class Game implements Serializable {
 				put(type, new HashMap<>());
 			}
 		}};
+		if (buildings.get(Hostel.NAME).getLevel() == 0) {
+			return hostelUnits;
+		}
 		if (r.nextFloat() < 0.5 && difficulty >= 4) {
 			HashMap<String, HashMap<String, ArrayList<Integer>>> returnHostelUnits = new HashMap<>();
 			returnHostelUnits.put(GameBattle.getUnitsTypes().getFirst(), new HashMap<>() {{
@@ -188,14 +190,22 @@ public class Game implements Serializable {
 		return health + attack + attackDistance + defense + move + 12;
 	}
 
-	public void refreshResourcesFromHotel(int count, String type) {
-		if (resources.containsKey(type)) {
-			resources.put(type, resources.get(type) + count);
+	public int refreshResourcesFromHotel(String type) {
+		if (buildings.get(Hotel.NAME).getLevel() == 0) {
+			return 0;
 		}
-	}
-
-	public Date getDateOfLastSession() {
-		return dateOfLastSession;
+		LocalDate localDate = LocalDate.now();
+		boolean newDate = localDate.getYear() > dateOfLastSession.getYear() ||
+				localDate.getDayOfYear() > dateOfLastSession.getDayOfYear();
+		if (resources.containsKey(type) && newDate) {
+			int days = (localDate.getYear() - dateOfLastSession.getYear()) * 365 +
+					localDate.getDayOfYear() - dateOfLastSession.getDayOfYear();
+			int count = buildings.get(Hotel.NAME).getBuildingUpper() * Hotel.PAYMENT * days;
+			resources.put(type, resources.get(type) + count);
+			dateOfLastSession = LocalDate.now();
+			return count;
+		}
+		return 0;
 	}
 
 	private int getAcademyUnitsSize() {

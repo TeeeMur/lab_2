@@ -464,7 +464,7 @@ public class GameInterface {
 			System.out.println("Введи путь для сохранения игры (введи \"нет\", если передумал):");
 			String inputAnswer = gamer.input();
 			if (!inputAnswer.toLowerCase().split(" ")[0].equals("нет")) {
-				while (!gameManager.checkIsDirectory(inputAnswer) && !inputAnswer.equals("нет")) {
+				while (gameManager.checkIsNotDirectory(inputAnswer) && !inputAnswer.equals("нет")) {
 					System.out.println("Это не директория! Введи путь к ней или введи \"нет\", если передумал!");
 					inputAnswer = gamer.input();
 				}
@@ -645,13 +645,12 @@ public class GameInterface {
 	public void choiceView() {
 		int answer;
 		while (true) {
-			if (game.getBuildings().containsKey(Hotel.NAME) && (!(new Date()).equals(game.getDateOfLastSession()))) {
-				int countOfResidents = game.getBuildings().get(Hotel.NAME).getBuildingUpper(Hotel.RESIDENTS_COUNT_STRING);
-				int payment = Hotel.PAYMENT;
-				game.refreshResourcesFromHotel(payment * countOfResidents,
-						game.getBuildings().get(Hotel.NAME).getCostType());
-				System.out.println("Твой отель принес тебе " + payment * countOfResidents +
-						" ресурса " + game.getBuildings().get(Hotel.NAME).getCostType());
+			if (game.getBuildings().containsKey(Hotel.NAME)) {
+				int gotFromHotel = game.refreshResourcesFromHotel(game.getBuildings().get(Hotel.NAME).getCostType());
+				if (gotFromHotel > 0) {
+					System.out.println("Твой отель принес тебе " + gotFromHotel +
+							" ресурса " + game.getBuildings().get(Hotel.NAME).getCostType());
+				}
 			}
 			System.out.println("Вот твои ресурсы:");
 			printResources();
