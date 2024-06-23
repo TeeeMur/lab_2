@@ -51,17 +51,19 @@ public class BattleMap implements Serializable {
 		for (int i = difficulty; i < 6 + sizeX + sizeY - 28; i++) {
 			fieldsToChoose.add(mapBasicFields.getFirst());
 		}
-		for (int j = 0; j < mapSizeX; j++) {
-			battleMapMatrix[0][j] = mapBasicFields.getFirst();
-		}
-		for (int j = 0; j < mapSizeX; j++) {
-			battleMapMatrix[mapSizeY - 1][j] = mapBasicFields.getFirst();
-		}
-		for (int i = 1; i < mapSizeY - 1; i++) {
+		for (int i = 0; i < mapSizeY; i++) {
 			for (int j = 0; j < mapSizeX; j++) {
-				battleMapMatrix[i][j] = fieldsToChoose.get((int) (Math.random() * fieldsToChoose.size()));
+				battleMapMatrix[i][j] = fieldsToChoose.getFirst();
 			}
 		}
+		if (difficulty != 0) {
+			for (int i = 1; i < mapSizeY - 1; i++) {
+				for (int j = 0; j < mapSizeX; j++) {
+					battleMapMatrix[i][j] = fieldsToChoose.get((int) (Math.random() * fieldsToChoose.size()));
+				}
+			}
+		}
+
 	}
 
 	public BattleMap(String[][] inputBattleMapMatrix, ArrayList<String> basicFields, HashMap<String, HashMap<String, Float>> penalties) {

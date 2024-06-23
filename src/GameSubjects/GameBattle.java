@@ -121,7 +121,12 @@ public class GameBattle {
 
 	public GameBattle(int difficulty, Game game) {
 		battleMap = new BattleMap(15, 15, difficulty);
-		wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		if (difficulty == 0) {
+			wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), 3);
+		}
+		else {
+			wallet = fillWallet(battleMap.getSizeX(), battleMap.getSizeY(), difficulty);
+		}
 		secondGamer = new Bot(secondGamerUnitsArray, unitsTyping,
 				unitsSpecsMap, battleMap.getPenalties(), battleMap, difficulty);
 		unitTypesPenalties = battleMap.getPenalties();
@@ -224,13 +229,14 @@ public class GameBattle {
 	private void placeUnitsIntoMap(ArrayList<Unit> unitsToPlace, int row) {
 		Unit eachUnitToPlace;
 		int xCoord;
+		int xSizeIsEven = Math.abs(battleMap.getSizeX() % 2 - 1);
 		ArrayList<Integer> placeCoords = new ArrayList<>() {{
-			for (int i = battleMap.getSizeX() / 2; i >= 0; i--) {
+			for (int i = battleMap.getSizeX() / 2 - xSizeIsEven; i >= 0; i--) {
 				add(i);
 			}
 			int j = 0;
 			for (int i = 1; i < battleMap.getSizeX(); i += 2) {
-				add(i, battleMap.getSizeX() / 2 + 1 + j);
+				add(i, battleMap.getSizeX() / 2 + 1 + j - xSizeIsEven);
 				j++;
 			}
 		}};
@@ -284,8 +290,8 @@ public class GameBattle {
 	}
 
 	//false - common, true - with portal
-	public boolean makeMove(String inputHeroNum, int xCoord, int yCoord) {
-		Unit actionUnit = getUnitByMapImage(inputHeroNum, false);
+	public boolean makeMove(String inputHeroMapImage, int xCoord, int yCoord) {
+		Unit actionUnit = getUnitByMapImage(inputHeroMapImage, false);
 		boolean portalMoving = false;
 		for (ArrayList<Integer> portal : portalsArray) {
 			if (Objects.equals(portal.getFirst(), xCoord) &&
@@ -306,8 +312,8 @@ public class GameBattle {
 		return portalMoving;
 	}
 
-	public int checkHeroMoveAbility(String inputHeroNum, int xCoord, int yCoord) {
-		Unit moveHero = getUnitByMapImage(inputHeroNum, false);
+	public int checkHeroMoveAbility(String inputHeroMapImage, int xCoord, int yCoord) {
+		Unit moveHero = getUnitByMapImage(inputHeroMapImage, false);
 		ArrayList<String> mapBasicFields = battleMap.getMapBasicFields();
 		if (xCoord < 0 || xCoord >= 15 || yCoord < 0 || yCoord >= 15) {
 			return 3;
@@ -396,7 +402,12 @@ public class GameBattle {
 			}
 			battleMap.placeSmth(battleMap.getMapBasicFields().getFirst(), attackableUnit.getxCoord(),
 					attackableUnit.getyCoord());
-			secondGamerUnitsArray.remove(attackableUnit);
+			if (side) {
+				gamerUnitsArray.remove(attackableUnit);
+			}
+			else {
+				secondGamerUnitsArray.remove(attackableUnit);
+			}
 		}
 		return kill;
 	}
@@ -704,4 +715,9 @@ public class GameBattle {
 		}
 		return -1;
 	}
+
+	public ArrayList<String> getPortalsColoringArray() {
+		return portalsColoringArray;
+	}
+
 }

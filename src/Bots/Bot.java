@@ -25,21 +25,38 @@ public class Bot {
 		ArrayList<String> botUnitsNames = new ArrayList<>();
 		String[] specNameSplit;
 		ArrayList<String> choiceTypes = new ArrayList<>(unitsTyping.keySet());
-		int botUnitsCount = (int) (battleMap.getSizeX() * (0.5f + (float)difficulty / 15f));
+		int botUnitsCount = (int) (battleMap.getSizeX() * (0.5f + (float) difficulty / 15f));
 		if (difficulty == 5) {
-			botUnitsCount--;
-			botUnitsCount--;
+			botUnitsCount -= 2;
 		}
-		for (int i = 0; i < botUnitsCount; i++) {
-			unitNameCounter = 1;
-			randomType = random.nextInt(choiceTypes.size());
-			choiceUnit = random.nextInt(unitsTyping.get(choiceTypes.get(randomType)).size());
-			unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
-			while (botUnitsNames.contains(unitName)) {
-				unitNameCounter += 1;
-				unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
+		if (difficulty == 0) {
+			int i = 0;
+			boolean stop = false;
+			for (String type : unitsTyping.keySet()) {
+				for (String name : unitsTyping.get(type)) {
+					botUnitsNames.add(name + " " + "1");
+					i++;
+					stop = (i == botUnitsCount);
+					if (stop) {
+						break;
+					}
+				}
+				if (stop) {
+					break;
+				}
 			}
-			botUnitsNames.add(unitName);
+		} else {
+			for (int i = 0; i < botUnitsCount; i++) {
+				unitNameCounter = 1;
+				randomType = random.nextInt(choiceTypes.size());
+				choiceUnit = random.nextInt(unitsTyping.get(choiceTypes.get(randomType)).size());
+				unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
+				while (botUnitsNames.contains(unitName)) {
+					unitNameCounter += 1;
+					unitName = unitsTyping.get(choiceTypes.get(randomType)).get(choiceUnit) + " " + unitNameCounter;
+				}
+				botUnitsNames.add(unitName);
+			}
 		}
 		botUnitsNames.sort(Comparator.naturalOrder());
 		for (int i = 0; i < botUnitsNames.size(); i++) {
@@ -49,7 +66,7 @@ public class Bot {
 			if (specNameSplit.length == 3) {
 				unitSpecName = unitSpecName + " " + specNameSplit[1];
 			}
-			for (String unitType: choiceTypes) {
+			for (String unitType : choiceTypes) {
 				if (unitsTyping.get(unitType).contains(unitSpecName)) {
 					type = unitType;
 					break;
@@ -63,18 +80,19 @@ public class Bot {
 		}
 		if (botDifficulty == 5) {
 			int botUnitsArraySize = botUnitsArray.size();
-			for (int i = botUnitsArraySize + 1; i < botUnitsArraySize + 2; i++) {
-				botUnitsArray.add(new Chernomor(((Integer)i).toString(), battleMap.getPenalties().get(GameBattle.getUnitsTypes().getFirst())));
-			}
+			botUnitsArray.add(new Chernomor(((Integer) (botUnitsArraySize + 1)).toString(), battleMap.getPenalties().get(GameBattle.getUnitsTypes().getFirst())));
 		}
 		doubleAttackersIndexList = new ArrayList<>();
-		for (int i = 0; i < difficulty - 2; i++) {
-			int a = random.nextInt(botUnitsNames.size());
-			while (doubleAttackersIndexList.contains(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET)) {
-				a = random.nextInt(botUnitsNames.size());
+		if (difficulty > 0) {
+			for (int i = 0; i < difficulty - 2; i++) {
+				int a = random.nextInt(botUnitsNames.size());
+				while (doubleAttackersIndexList.contains(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET)) {
+					a = random.nextInt(botUnitsNames.size());
+				}
+				doubleAttackersIndexList.add(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET);
 			}
-			doubleAttackersIndexList.add(GameBattle.ANSI_YELLOW + botUnitsNames.get(a) + GameBattle.ANSI_RESET);
 		}
+
 	}
 
 	public boolean ableStealParamIndex(ArrayList<Unit> enemyUnitsArray, int paramIndex, int gamerUnitIndexInArray) {
@@ -140,7 +158,9 @@ public class Bot {
 					attackableUnitsIndexList.add(i);
 				}
 			}
-			if (breakAttackChoice) {break;}
+			if (breakAttackChoice) {
+				break;
+			}
 		}
 		if (breakAttackChoice) {
 			if (doubleAttackersIndexList.contains(botUnitsArray.get(actingBotUnitIndex).getName())) {
@@ -152,7 +172,7 @@ public class Bot {
 				} else if (attackedEnemyUnitHealth + attackedEnemyUnitDefense - botUnitsArray.get(actingBotUnitIndex).getAttackPoints() <= 0) {
 					for (secondAttackedEnemyUnitIndex = 0; secondAttackedEnemyUnitIndex < enemyUnitsArray.size(); secondAttackedEnemyUnitIndex++) {
 						if (botUnitsArray.get(actingBotUnitIndex).canAttack(enemyUnitsArray.get(secondAttackedEnemyUnitIndex)) &&
-							secondAttackedEnemyUnitIndex != attackedEnemyUnitIndex) {
+								secondAttackedEnemyUnitIndex != attackedEnemyUnitIndex) {
 							returnInteger += (secondAttackedEnemyUnitIndex * 16 * 16 * 16 - 1);
 							break;
 						}
@@ -170,10 +190,10 @@ public class Bot {
 			float acting = random.nextFloat();
 			if (acting >= 0.5f) {
 				ArrayList<ArrayList<Integer>> coordsList = ((Chernomor) actingUnit).createPortal(battleMap, existingPortals);
-				returnInteger = coordsList.get(1).get(1) * (int)Math.pow(16, 5) +
-						coordsList.get(1).get(0) * (int)Math.pow(16, 4) +
-						coordsList.get(0).get(1) * (int)Math.pow(16, 3) +
-						coordsList.get(0).get(0) * (int)Math.pow(16, 2) +
+				returnInteger = coordsList.get(1).get(1) * (int) Math.pow(16, 5) +
+						coordsList.get(1).get(0) * (int) Math.pow(16, 4) +
+						coordsList.get(0).get(1) * (int) Math.pow(16, 3) +
+						coordsList.get(0).get(0) * (int) Math.pow(16, 2) +
 						actingBotUnitIndex * 16 + 3;
 				return returnInteger;
 			}
@@ -235,8 +255,8 @@ public class Bot {
 			xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
 			yCoordMove = actingUnit.getyCoord() - random.nextInt(maxUnitMovePoints);
 			while (xCoordMove < 0 || xCoordMove > 14) {
-					xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
-				}
+				xCoordMove = actingUnit.getxCoord() + random.nextInt(3);
+			}
 			while (yCoordMove < 0 || yCoordMove > 14) {
 				yCoordMove = actingUnit.getyCoord() + random.nextInt(maxUnitMovePoints);
 			}

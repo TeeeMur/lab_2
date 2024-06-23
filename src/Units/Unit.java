@@ -55,8 +55,8 @@ public class Unit {
 		this.name = name;
 	}
 
-	public final int getCostPoints() {
-		return costPoints;
+	public final float getPenalty(String field) {
+		return penalty.get(field);
 	}
 
 	public final int getParamByIndex(int index) {
@@ -137,7 +137,7 @@ public class Unit {
 	}
 
 	public final boolean canAttack(Unit enemy) {
-		double weakAttackDistanceAdd = 0f;
+		double weakAttackDistanceAdd = 0.1f;
 		if (attackDistance == 1) {
 			weakAttackDistanceAdd = 0.5f;
 		}
@@ -150,10 +150,8 @@ public class Unit {
 		xCoord = xCoordMoved;
 		yCoord = yCoordMoved;
 	}
-	public boolean canMove(int xCoordMoved, int yCoordMoved, BattleMap battlePlace) {
-		if (xCoordMoved >= 15 || xCoordMoved < 0 || yCoordMoved >= 15 || yCoordMoved < 0) {
-			return false;
-		}
+
+	public float getLastMovePoints(int xCoordMoved, int yCoordMoved, BattleMap battlePlace) {
 		int xDistance = xCoord - xCoordMoved;
 		int yDistance = yCoord - yCoordMoved;
 		int xMove = -(int)signum(xDistance); // if -1 then move left, if 1 then move right
@@ -187,6 +185,13 @@ public class Unit {
 			lastMovePoints -= movePointPenalty;
 			yDistance += yMove;
 		}
-		return lastMovePoints >= 0f;
+		return lastMovePoints;
+	}
+
+	public boolean canMove(int xCoordMoved, int yCoordMoved, BattleMap battlePlace) {
+		if (xCoordMoved >= 15 || xCoordMoved < 0 || yCoordMoved >= 15 || yCoordMoved < 0) {
+			return false;
+		}
+		return getLastMovePoints(xCoordMoved, yCoordMoved, battlePlace) >= 0;
 	}
 }

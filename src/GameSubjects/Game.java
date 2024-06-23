@@ -6,6 +6,8 @@ import Buildings.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Game implements Serializable {
 
@@ -17,6 +19,7 @@ public class Game implements Serializable {
 	public static final String BUILDING_COST_STRING = "cost";
 	public static final String STEALER = "Вор";
 	LocalDate dateOfLastSession;
+	Logger logger = Logger.getLogger(Game.class.getName());
 
 	private final HashMap<String, Buildable> buildings = new HashMap<>() {{
 		put(Healer.NAME, new Healer());
@@ -114,9 +117,22 @@ public class Game implements Serializable {
 	public void upgradeGameBuilding(String buildingName, String type) {
 		if (Objects.equals(buildingName, Tavern.NAME)) {
 			buildings.get(Tavern.NAME).upgradeBuilding(type);
+			logger.log(Level.WARNING, "У здания " + buildingName + " улучшен параметр " +
+					type + " до уровня " + buildings.get(buildingName).getLevel());
+		}
+		if (buildings.get(buildingName).getUpgradeCost(type) > resources.get(buildings.get(buildingName).getCostType())) {
+			logger.log(Level.SEVERE, "Попытка улучшить здание " + buildingName + " при нехватке ресурса " + type + " для его улучшения." +
+					" Количество ресурса " + type + ": " + resources.get(buildings.get(buildingName).getCostType()) + ", стоимость улучшения: " + buildings.get(buildingName).getUpgradeCost(type) + ".");
+			return;
 		}
 		else {
 			buildings.get(buildingName).upgradeBuilding();
+		}
+		if (buildings.get(buildingName).getLevel() == 1) {
+			logger.log(Level.INFO, "Построено здание: " + buildingName);
+		}
+		else {
+			logger.log(Level.INFO, "Здание " + buildingName + " улучшено до " + buildings.get(buildingName).getLevel() + " уровня.");
 		}
 	}
 

@@ -7,7 +7,11 @@ import GameSubjects.GameBattle;
 import GameSubjects.GameManager;
 import Gamers.Gamer;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import static GameInterfaces.InputChecker.ANSWER_CHECK_LIST;
 import static GameInterfaces.InputChecker.checkAnswer;
@@ -25,9 +29,10 @@ public class GameInterface {
 		add("добавить своих героев");
 	}};
 
-	Gamer gamer;
-	Game game;
-	String absolutePathSaveGame;
+	private final Gamer gamer;
+	private Game game;
+	private String absolutePathSaveGame;
+	private static final Logger logger = Logger.getLogger(GameInterface.class.getName());
 
 	public GameInterface(Gamer gamer) {
 		this.gamer = gamer;
@@ -74,11 +79,21 @@ public class GameInterface {
 					}
 				}
 				this.game = inputGame;
+				try {
+					LogManager.getLogManager().readConfiguration();
+				} catch (IOException | SecurityException e) {
+					System.out.println("Система логирования не прочитала конфигурационный файл.");
+				}
 				absolutePathSaveGame = gameLocation;
 				return;
 			case (CHOICE_GAME):
 				absolutePathSaveGame = "";
 				this.game = new Game(1000000, 100000);
+				try {
+					LogManager.getLogManager().readConfiguration();
+				} catch (IOException | SecurityException e) {
+					System.out.println("Система логирования не прочитала конфигурационный файл.");
+				}
 				System.out.println("Твоя новая игра создана!");
 				return;
 			default:
@@ -260,7 +275,7 @@ public class GameInterface {
 		}};
 	}
 
-	private void gamePlayBattleGame() {
+	private void gamePlayGameBattle() {
 		GameBattle gameBattle;
 		int answer;
 		HashMap<String, Integer> gameBattleAcquiredResources;
@@ -413,7 +428,9 @@ public class GameInterface {
 		}
 		if (spendableBuildings.isEmpty()) {
 			System.out.println("У тебя не хватает ресурсов для покупки/улучшения зданий!");
+			logger.log(Level.WARNING, "Не хватает ресурсов на покупку ни одного здания.");
 		} else {
+			logger.log(Level.INFO, "Есть ресурсы на покупку зданий.");
 			System.out.print("Введи название здания, которое хочешь построить/улучшить;" +
 					"\nЕсли не хочешь, введи \"нет\":");
 			ArrayList<String> answerList = new ArrayList<>(spendableBuildings.stream().map(String::toLowerCase).toList());
@@ -424,6 +441,7 @@ public class GameInterface {
 				String upgradeResultString;
 				inputBuildingName = inputBuildingName.substring(0, 1).toUpperCase() + inputBuildingName.substring(1);
 				if (inputBuildingName.equals(Tavern.NAME)) {
+					logger.log(Level.WARNING, "Пользователь выбрал здание " + Tavern.NAME + " для улучшения.");
 					String penalty = "штраф", move = "перемещение";
 					System.out.print("Введи тип улучшения: на уменьшение штрафов - введи \"" + penalty + "\"" +
 							"\nНа увеличение дальности перемещения - \"" + move + "\":");
@@ -432,6 +450,7 @@ public class GameInterface {
 								add(penalty);
 								add(move);
 							}});
+					logger.log(Level.WARNING, "Пользователь выбрал способность таверны \"" + type + "\" для улучшения.");
 					upgradeResultString = "Способность таверны - " + type + " - улучшена до ";
 					if (Objects.equals(type, penalty)) {
 						type = Tavern.PENALTY_TYPE;
@@ -447,14 +466,15 @@ public class GameInterface {
 						upgradeResultString += " улучшено до " + (buildingsHashMap.get(inputBuildingName).getLevel() + 1) +
 								" уровня!";
 					}
-					System.out.println(upgradeResultString);
 				}
 				int upgradeCost = buildingsHashMap.get(inputBuildingName).getUpgradeCost(type);
 				String costType = buildingsHashMap.get(inputBuildingName).getCostType();
 				game.upgradeGameBuilding(inputBuildingName, type);
 				game.spendResource(upgradeCost, costType);
 				System.out.println(upgradeResultString);
+				return;
 			}
+			logger.log(Level.WARNING, "Пользователь отказался от улучшения здания.");
 		}
 	}
 
@@ -669,8 +689,9 @@ public class GameInterface {
 			answer = Integer.parseInt(checkAnswer(gamer, gamer.input(), new ArrayList<>(actionChoiceHashMap.keySet().
 					stream().map(Object::toString).toList())));
 			if (answer == 1) {
-				gamePlayBattleGame();
+				gamePlayGameBattle();
 			} else if (answer == 2) {
+				logger.log(Level.INFO, "Выбор действия: " + actionChoiceHashMap.get(answer) + ".");
 				gameBuyNewBuilding();
 			} else if (answer == 3) {
 				gameSaveGame();
